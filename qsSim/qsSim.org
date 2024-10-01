@@ -1,0 +1,7 @@
+#+begin_export latex
+\section{Introduction}
+Introduction to query/subject with simulated data.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  echo "TO DO: qs_sim.sh"
+#+end_src
