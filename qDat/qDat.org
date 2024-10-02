@@ -169,7 +169,7 @@ that we can set a threshold that allows us to pick unique regions.
     \includegraphics{../qDat/chr21}
   \end{center}
   \caption{Two measures of uniqueness along a portion of human
-    chromosome 21, $\cm$ (\emph{c}) and the mappbaility (\emph{m});
+    chromosome 21, $\cm$ (\emph{c}) and the mappability (\emph{m});
     shown are also the $\cm$ threshold (\emph{t}), the unique region
     picked based on this threshold (\emph{u}), and the tree genes that
     intersect this region, LOC105369308 (\emph{g1}), SIM2 (\emph{g2}),
