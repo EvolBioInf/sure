@@ -1,15 +1,14 @@
 #+begin_export latex
 \section{Introduction}
-The simplest search for unique regions we can carry out is within one
-sequence, or for a set of sequences that are effectively regarded as
-one. In the following we search such sequences for unique regions
-using the two programs \ty{genmap}~\cite{poc20:gen} and
+The simplest search for unique regions is within one sequence, or
+within a set of sequences that are effectively regarded as one. In the
+following we search such query sequences for unique regions using the
+two programs \ty{genmap}~\cite{poc20:gen} and
 \ty{macle}~\cite{pir19:hig}. We first explore these programs by
-applying them to simulated sequences. The aim here is to get an
-intuition about their function. Then we show how \ty{genmap} and
-\ty{macle} can be used to explore real sequence data by searching for
-unique regions in the shortest chromosome of the human genome,
-chromosome 22.
+applying them to simulated sequences to get an intuition about their
+function. Then we show how \ty{genmap} and \ty{macle} can be used to
+explore real sequence data by searching for unique regions in the
+shortest chromosome of the human genome, chromosome 21.
 
 \section{Simulated Data}
 We begin by simulating the simplest case, single random
@@ -33,9 +32,9 @@ save the index to the file \ty{q\_gm.idx}.
   genmap index -F q.fasta -I q_gm.idx
 #+end_src
 #+begin_export latex
-Then we calculate the mappability with k-mers of length 15 (\ty{-K}) that are
-matched without errors (\ty{-E}) with output written to \ty{q\_gm.out} (\ty{-O})
-using text format (\ty{-t}).
+Then we calculate the mappability with k-mers of length 15 (\ty{-K})
+that are matched without errors (\ty{-E}) with output written to
+\ty{q\_gm.out} (\ty{-O}) in text format (\ty{-t}).
 #+end_export
 #+begin_src sh <<qSim.sh>>=
   genmap map -I q_gm.idx/ -K 15 -E 0 -O q_gm.out -t 
@@ -43,7 +42,7 @@ using text format (\ty{-t}).
 #+begin_export latex
 This generates the output file \ty{q\_gm.out.txt}, which contains the
 output in a particular version of the FASTA format, where the header
-is followed by single row of data. The row contains a mappability
+is followed by single row of data. The data row contains a mappability
 value for each position in the input sequence, five million
 mappability values in our case. To make this lengthy row of data
 easier to parse, we wrap it into shorter rows with the program
@@ -54,6 +53,7 @@ rows.
   wrapSeq q_gm.out.txt | head
 #+end_src
 #+begin_export latex
+\small
 \begin{verbatim}
 >Rand1
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
@@ -66,24 +66,17 @@ rows.
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 \end{verbatim}
+\normalsize
 
 Remember, our input sequence is random, so your result is bound to
 look slightly different. It should, however, also be dominated by
-ones, indicating that almost all 15-mers in a random 5 Mb sequence are
+``1''s, indicating that almost all 15-mers in a random 5 Mb sequence are
 unique.
 
-To plot the mappabilities along the sequences, we write them as pairs
+To plot the mappabilities along the sequence, we write them as pairs
 of x,y values. Since plotting 5 million values overwhelms our plotting
-program \ty{plotLine} (Biobox), we sample just 1 \% of the
-values. Figure~\ref{fig:qgm1} shows that the mappability is usually 1,
-sometimes 0.5 and rarely 0.3, which corresponds to k-mers that are
-repeated once, twice, or three times.
-\begin{figure}
-  \begin{center}
-    \includegraphics{../qSim/q_gm1.ps}
-  \end{center}
-  \caption{Mappability along 5 Mb of random sequence.}\label{fig:qgm1}
-\end{figure}
+program \ty{plotLine} (Biobox), we sample just 1\% of the
+values.
 #+end_export
 #+begin_src sh <<qSim.sh>>=
   tail -n +2  q_gm.out.txt |
@@ -92,25 +85,35 @@ repeated once, twice, or three times.
       plotLine -x "Position (Mb)" -y Mappability
 #+end_src
 #+begin_export latex
+The resulting Figure~\ref{fig:qgm1} shows that the mappability is
+usually 1, sometimes 0.5 and rarely 0.3, which corresponds to k-mers
+that are repeated once, twice, or three times.
+\begin{figure}
+  \begin{center}
+    \includegraphics{../qSim/q_gm1.ps}
+  \end{center}
+  \caption{Mappability along 5 Mb of random sequence.}\label{fig:qgm1}
+\end{figure}
+
 Clearly, in a random sequence everything is unique. But if we didn't
 know we were dealing with a random input sequence, how would we pick
 unique regions from the output of \ty{genmap}? The answer is, by using
 a sliding window analysis.
 
 The program \ty{sw} (Biobox) implements a sliding window analysis on a
-column of numbers. For some window length, $w$, \ty{sw} initially read
-$w$ numbers, calculates their average, $a$ and prints the pair
+column of numbers. For some window length, $w$, \ty{sw} reads the $w$
+first numbers, calculates their average, $a$ and prints the pair
 $(w/2,a)$, that is, the midpoint of the first window and its
 value. Then the window is slid to the right, by default by a tenth of
-the window length, and the procedure is repeated. We run sw with
-window length 1000. Figure~\ref{fig:qgm2} shows that, as expected the
+the window length, and the procedure is repeated. We run \ty{sw} with
+window length 1000. Figure~\ref{fig:qgm2} shows that, as expected, the
 values are uniformly close to 1.
 \begin{figure}
 \begin{center}
 \includegraphics{../qSim/q_gm2}
 \end{center}
-\caption{Sliding window analysis of mappability values along 5 Mb of
-  random sequence.}\label{fig:qgm2}
+\caption{Sliding window analysis of mappability with 1 kb windows
+  along 5 Mb of random sequence.}\label{fig:qgm2}
 \end{figure}
 #+end_export
 #+begin_src sh <<qSim.sh>>=
@@ -118,7 +121,7 @@ values are uniformly close to 1.
       tr ' ' '\n' |
       sw -w 1000 |
       awk '{print $2/1000000, $3}' |
-      plotLine -x "Position (Mb)" -y Mappability -Y "0:1"
+      plotLine -x "Position (Mb)" -y Mappability -Y "0:1.1"
 #+end_src
 #+begin_export latex
 To actually pick unique regions, we use the program \ty{merwin} from
@@ -146,14 +149,15 @@ index of our sequence and save it to the file \ty{q\_ma.idx}.
 #+end_src
 #+begin_export latex
 Figure~\ref{fig:qma1} shows the sliding window analysis of $\cm$, which
-looks very similar to the sliding window analysis of the mappability
-in Figure~\ref{fig:qgm2}.
+looks similar to the sliding window analysis of the mappability
+in Figure~\ref{fig:qgm2}, though it is also clear that the $\cm$ is
+centered on 1, while the mappability is bound by 1.
 \begin{figure}
   \begin{center}
     \includegraphics{../qSim/q_ma1}
   \end{center}
-  \caption{Sliding window analysis of $\cm$ along a random 5 Mb
-    sequence.}\label{fig:qma1}
+  \caption{Sliding window analysis of $\cm$ with 1 kb windows along a
+    random 5 Mb sequence.}\label{fig:qma1}
 \end{figure}
 #+end_export
 #+begin_src sh <<qSim.sh>>=
@@ -188,8 +192,8 @@ Rand1   136501  217900  1.002
 \end{verbatim}
 #+end_export
 #+begin_export latex
-We now sum the lengths of the regions classified unique, 4,987,400 bp
-in our case, roughly 4.99 Mb.
+We now sum the lengths of the regions classified as unique, 4,987,400
+bp in our case, roughly 4.99 Mb.
 #+end_export
 #+begin_src sh <<qSim.sh>>=
   macle -w 1000 q_ma.idx |
@@ -199,7 +203,7 @@ in our case, roughly 4.99 Mb.
 #+begin_export latex
 We end our exploration of single random sequences, by calculating the
 percentage of what we should have found, the full 5 Mb. In our case
-this is 99.7 \%.
+this is 99.7\%, very close.
 #+end_export
 #+begin_src sh <<qSim.sh>>=
   echo '4987400/5000000 * 100' | bc -l
@@ -207,17 +211,17 @@ this is 99.7 \%.
 #+begin_export latex
 \subsection{Unique Regions in Non-Unique Background}
 Unique regions are usually picked on a non-unique background. To
-simulate this situation, we first generate a mutated version of our
-original input sequence using the program \ty{mutator} (Biobox). With
-default settings, \ty{mutator} converts the input sequence into its
-homologue that is diverged by 1 \% mutations per site.
+simulate a non-unique, that is homologous, background, we first
+generate a mutated version of our original input sequence using the
+program \ty{mutator} (Biobox). With default settings, \ty{mutator}
+converts the input sequence into its homologue diverged by 1\% mutations per site.
 #+end_export
 #+begin_src sh <<qSim.sh>>=
   mutator q.fasta > q2.fasta
 #+end_src
 #+begin_export latex
-Then we concatenate the original query and its mutated version into a
-new query, where nothing should be unique.
+Then we concatenate the original query and its homolog into a new
+query, where nothing should be unique.
 #+end_export
 #+begin_src sh <<qSim.sh>>=
   echo ">q3" > q3.fasta
@@ -238,8 +242,8 @@ values are close to 1.
   \begin{center}
     \includegraphics{../qSim/q3_ma}
   \end{center}
-  \caption{Sliding window analysis of $\cm$ along a random sequence
-    on the background of its homolog that is diverged by 1 \%.}\label{fig:qma2}
+  \caption{Sliding window analysis of $\cm$ in 1 kb windows along a random sequence
+    on the background of its 1\% diverged homolog.}\label{fig:qma2}
 \end{figure}
 #+end_export
 #+begin_src sh <<qSim.sh>>=
@@ -257,7 +261,7 @@ changes slightly to 0.9855.
   mantile -l 10000000 -w 1000 -g 0.5 -p 0.05
 #+end_src
 #+begin_export latex
-Then we run the probe for unique regions and find none, as expected.
+Then we search for unique regions and find none, as expected.
 #+end_export
 #+begin_src sh <<qSim.sh>>=
   macle -w 1000 q3_ma.idx |
@@ -266,8 +270,8 @@ Then we run the probe for unique regions and find none, as expected.
 #+begin_export latex
 In order to generate a discrete non-unique region on a non-unique
 background, we produce a fourth query using the original sequence and
-its mutated version, from which we excise 2 kb right in the middle
-using the program \ty{cutSeq} (Biobox).
+its homolog, from which we excise 2 kb right in the middle using the
+program \ty{cutSeq} (Biobox).
 #+end_export
 #+begin_src sh <<qSim.sh>>=
   echo ">q4" > q4.fasta
@@ -282,15 +286,15 @@ We calculate the index.
 #+end_src
 #+begin_export latex
 Figure~\ref{fig:qma3} shows the sliding window analysis of the
-original sequence on the background of its mutated sibling. We can
-clearly see on a background of non-unique material a single central
-peak of $\cm=1$ indicating the unique region we just created.
+original sequence on the background of its homolog with deletion. We
+can clearly see on a background of homologous material a single
+central peak of $\cm=1$, indicating the unique region we just created.
 \begin{figure}
   \begin{center}
     \includegraphics{../qSim/q4_ma}
   \end{center}
   \caption{Sliding window analysis of a random 5 Mb sequence on the
-    background of a sequence diverged by 1 \%; the background sequence
+    background of a sequence diverged by 1\%; the background sequence
     also has a 2 kb deletion at its center which shows up as the peak
     in the middle.}\label{fig:qma3}
 \end{figure}
