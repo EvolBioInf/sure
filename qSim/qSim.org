@@ -317,3 +317,32 @@ can do so with great accuracy.
 q4      2499001 2501100 1.04
 \end{verbatim}
 #+end_export
+#+begin_src latex
+  We then consider what happens if we run \ty{genmap} on the same
+  simulated sequence with the 2 kb unique region. We first index the
+  sequence and save it to the file \ty{q4\_gm.idx}
+#+end_src
+#+begin_src sh <<qSim.sh>>=
+  genmap index -F q4.fasta -I q4_gm.idx
+#+end_src
+#+begin_src latex
+  Then we once again calculate the mappability with k-mers with a length
+  of 15 and no mismatches. The ouptut is written to \ty{q4\_gm.out} in
+  text format.
+#+end_src
+#+begin_src sh <<qSim.sh>>=
+  genmap map -I q4_gm.idx -K 15 -E 0 -O q4_gm.out -t
+#+end_src
+#+begin_src latex
+  Then, repeating the same analysis we did before, we implement a
+  sliding window analysis with a window length of 1000.  Using head we
+  extract only the first sequence for visualization purposes.
+#+end_src
+#+begin_src sh <<qSim.sh>>=
+  tail -n +2 q4_gm.out.txt|
+      tr ' ' '\n' |
+      head -n 5000000|
+      sw -w 1000 |
+      awk '{print $2/1000000, $3}' |
+      plotLine -x "Position (Mb)" -y Mappability -Y "0:1.1"
+#+end_src
