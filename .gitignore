@@ -17,3 +17,16 @@ doc/sure.toc
 doc/version.txt
 doc/texput.log
 scripts/*.sh
+qDat/README.md
+qDat/chr21.cm
+qDat/chr21.dat
+qDat/chr21.fna
+qDat/chr21.map
+qDat/chr21_gm.dat
+qDat/chr21r.fna
+qDat/chr22.fna
+qDat/hs.fna
+qDat/hs.gff
+qDat/ncbi_dataset.zip
+qDat/ncbi_dataset/
+qDat/test/

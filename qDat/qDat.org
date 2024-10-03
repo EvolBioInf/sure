@@ -50,6 +50,26 @@ We count the 46.7 Mb of chromosome 21 using the program \ty{cres}
   cres chr21.fna
 #+end_src
 #+begin_export latex
+\begin{verbatim}
+Total: 46709983
+Residue Count   Fraction
+A       6975989 0.149
+C       5249097 0.112
+G       5245212 0.112
+M       2       4.28e-08
+N       6621361 0.142
+R       1       2.14e-08
+T       6989818 0.15
+a       4844675 0.104
+c       2936147 0.0629
+g       2981169 0.0638
+t       4866512 0.104
+\end{verbatim}
+The lower case residue designations indicate repeats, while \ty{N}
+indicates an unknown nucleotide. 14.2\% of chromosome 21 are still
+unknown.
+#+end_export
+#+begin_export latex
 We calculate the \ty{genmap} index of chromosome 21. This takes 56 s
 and 1.4 GB of RAM.
 #+end_export
@@ -71,6 +91,52 @@ windows, and save the values.
   tail -n +2 chr21_gm.out.txt |
       tr ' ' '\n' |
       sw -w 10000 > chr21.map
+#+end_src
+#+begin_export latex
+To pick unique regions on chromosome 21, we calculate the mappability
+threshold like we did for the simulated data. So we need to randomize
+the sequence of chromosome 21. However, we saw that the sequence
+contains many unknown nucleotides, \ty{N}s, so we remove these before
+we randomize the sequence. Removing \ty{N}s creates empty lines, which
+we remove and then re-wrap the sequence before we store it as
+\ty{chr21r.fna}.
+#+end_export
+#+begin_src sh <<qDat.sh>>=
+  tr -d N < chr21.fna |
+      grep -v '^$' |
+      wrapSeq > chr21r.fna
+#+end_src
+#+begin_export latex
+Then we index the randomized sequence and calculate its mappability.
+#+end_export
+#+begin_src sh <<qDat.sh>>=
+  genmap index -F chr21r.fna -I chr21r_gm.idx
+  genmap map -I chr21r_gm.idx/ -K 15 -E 0 -O chr21r_gm.out -t 
+#+end_src
+#+begin_export latex
+We carry out the sliding window analysis and pick the 5\% quantile of
+mappability values. Given that there are $46.7\times 10^6$ mappability
+values, the 5\% quantile is entry number
+\[
+46.7\times 10^6/100*5\apptox 2,335,000.
+\]
+This turns out to be 0.9273.
+#+end_export
+#+begin_src sh <<qDat.sh>>=
+  tail -n +2 chr21r_gm.out.txt |
+      tr ' ' '\n' |
+      sw -w 10000 |
+      cut -f 3 |
+      sort -n |
+      head -n 2335000 |
+      tail -n 1
+#+end_src
+#+begin_export latex
+However, if we look for unique regions with this threshold, we find
+none.
+#+end_export
+#+begin_src sh <<qDat.sh>>=
+  merwin -w 10000 -t 0.9273 < chr21.map
 #+end_src
 #+begin_export latex
 Having calculated the mappability with \ty{genmap}, we next calculate
@@ -149,8 +215,10 @@ unique region, ``u'', and the coordinates of the three genes mentioned
 above, ``g1'', ``g2'', and ``g3''.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
-  echo "36.588001 0.9951 t" >> chr21.dat
-  echo "36.814000 0.9951 t" >> chr21.dat
+  echo "36.588001 0.9951 tc" >> chr21.dat
+  echo "36.814000 0.9951 tc" >> chr21.dat
+  echo "36.588001 0.9273 tm" >> chr21.dat
+  echo "36.814000 0.9273 tm" >> chr21.dat
   echo "36.688001 0.2 u"  >> chr21.dat
   echo "36.714000 0.2 u"  >> chr21.dat
   echo "36.632681 0.1 g1" >> chr21.dat
@@ -170,10 +238,11 @@ that we can set a threshold that allows us to pick unique regions.
   \end{center}
   \caption{Two measures of uniqueness along a portion of human
     chromosome 21, $\cm$ (\emph{c}) and the mappbaility (\emph{m});
-    shown are also the $\cm$ threshold (\emph{t}), the unique region
-    picked based on this threshold (\emph{u}), and the tree genes that
-    intersect this region, LOC105369308 (\emph{g1}), SIM2 (\emph{g2}),
-    and LOC107985492 (\emph{g3}).}\label{fig:chr21}
+    shown are also the $\cm$ threshold (\emph{tc}), the mappability
+    threshold (\emph{tm}), the unique region picked based on this threshold
+    (\emph{u}), and the tree genes that intersect this region,
+    LOC105369308 (\emph{g1}), SIM2 (\emph{g2}), and LOC107985492
+    (\emph{g3}).}\label{fig:chr21}
 \end{figure}
 #+end_export
 #+begin_src sh <<qDat.sh>>=
