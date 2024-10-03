@@ -118,7 +118,7 @@ We carry out the sliding window analysis and pick the 5\% quantile of
 mappability values. Given that there are $46.7\times 10^6$ mappability
 values, the 5\% quantile is entry number
 \[
-46.7\times 10^6/100*5\apptox 2,335,000.
+46.7\times 10^6/100*5\approx 2,335,000.
 \]
 This turns out to be 0.9273.
 #+end_export
@@ -232,6 +232,11 @@ above, ``g1'', ``g2'', and ``g3''.
 Figure~\ref{fig:chr21} shows the plot of our region. The mappability
 and $\cm$ are closely correlated, though the $\cm$ has the advantage
 that we can set a threshold that allows us to pick unique regions.
+
+For \ty{genmap} threshold computation evidently still needs to be
+developed. If we lowered the mappability threshold from 0.9273 to
+0.92, the longest interval we'd pick would be 16 kb in the region
+36,692,001--36,708,000, also intersecting the SIM gene (not shown).
 \begin{figure}
   \begin{center}
     \includegraphics{../qDat/chr21}

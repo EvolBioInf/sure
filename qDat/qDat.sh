@@ -1,13 +1,13 @@
-# datasets download genome accession GCF_000001405.40 \
-#            --include genome,gff3 \
-#            --dehydrated
-# unzip ncbi_dataset.zip
-# datasets rehydrate --directory .
-# path="ncbi_dataset/data/GCF_000001405.40"
-# path="$path/GCF_000001405.40_GRCh38.p14_genomic.fna"
-# mv  $path hs.fna
-# mv ncbi_dataset/data/GCF_000001405.40/genomic.gff hs.gff
-# grep '^>' hs.fna | grep NC
+datasets download genome accession GCF_000001405.40 \
+           --include genome,gff3 \
+           --dehydrated
+unzip ncbi_dataset.zip
+datasets rehydrate --directory .
+path="ncbi_dataset/data/GCF_000001405.40"
+path="$path/GCF_000001405.40_GRCh38.p14_genomic.fna"
+mv  $path hs.fna
+mv ncbi_dataset/data/GCF_000001405.40/genomic.gff hs.gff
+grep '^>' hs.fna | grep NC
 getSeq NC_000021.9 hs.fna > chr21.fna
 cres chr21.fna
 genmap index -F chr21.fna -I chr21_gm.idx
