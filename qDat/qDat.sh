@@ -47,10 +47,6 @@ echo "36.588001 0.9273 tm" >> chr21.dat
 echo "36.814000 0.9273 tm" >> chr21.dat
 echo "36.688001 0.2 u"  >> chr21.dat
 echo "36.714000 0.2 u"  >> chr21.dat
-echo "36.632681 0.1 g1" >> chr21.dat
-echo "36.698991 0.1 g1" >> chr21.dat
-echo "36.699115 0.1 g2" >> chr21.dat
-echo "36.749917 0.1 g2" >> chr21.dat
-echo "36.700516 0.1 g3" >> chr21.dat
-echo "36.709131 0.1 g3" >> chr21.dat
+echo "36.699115 0.1 s" >> chr21.dat
+echo "36.749917 0.1 s" >> chr21.dat
 plotLine -Y "0:1.1" -x "Position (Mb)" -y "Uniqueness" chr21.dat

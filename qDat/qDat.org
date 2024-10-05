@@ -193,11 +193,21 @@ from the annotation file.
 #+end_src
 #+begin_export latex
 This gives two long non-coding RNAs at 36,632,681--36,698,991
-(accession LOC105369308) and 36,700,516-36,709,131 (LOC107985492),
-and the gene encoding the transcription factor SIM2 located at
-36,699,115--36,749,917. SIM2 is a master regulator of neurogenesis and
-this whole region is part of the chromosomal region associated with
-Down syndrome.
+(accession LOC105369308) and 36,700,516-36,709,131 (LOC107985492), and
+the gene encoding the transcription factor SIM2 located at
+36,699,115--36,749,917. ``SIM2'' stands for ``single-minded 2'' and
+was originally named for the morphological effect of its knockout on
+the midline neuroepithelium of fruit flies, where two strands of
+neurological tissue merge into one~\cite{tho88:mol}. SIM2 is a
+transcription factor based on the helix-loop-helix motif and mouse
+knock-outs are associated with severe morphological and neurological
+abnormalities~\cite{but22:cha}. In humans, the gene is located in the
+Down chromosomal region on chromosome 21~\cite{dah95:dow}, which is
+critical for the development of Down syndrome. And while the exact
+molecular details of SIM2 action during development and beyond remain
+unclear, it is known that patients with intellectual disabilities have
+numerous amino acid changes in SIM2 that \emph{in vitro} impair its
+function as a transcription factor~\cite{but22:cha}.
 
 So let's plot $\cm$ and the mappability in the 200 kb surrounding our
 unique region, 36,588,001--36,814,000. We first extract the $\cm$
@@ -211,8 +221,7 @@ values and label them ``c'', then the mappbability labeled ``m''.
 #+end_src
 #+begin_export latex
 Now we annotate the graph by adding the $\cm$ threshold, ``t'', the
-unique region, ``u'', and the coordinates of the three genes mentioned
-above, ``g1'', ``g2'', and ``g3''.
+unique region, ``u'', and the coordinates of the SIM2 gene.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
   echo "36.588001 0.9951 tc" >> chr21.dat
@@ -221,12 +230,8 @@ above, ``g1'', ``g2'', and ``g3''.
   echo "36.814000 0.9273 tm" >> chr21.dat
   echo "36.688001 0.2 u"  >> chr21.dat
   echo "36.714000 0.2 u"  >> chr21.dat
-  echo "36.632681 0.1 g1" >> chr21.dat
-  echo "36.698991 0.1 g1" >> chr21.dat
-  echo "36.699115 0.1 g2" >> chr21.dat
-  echo "36.749917 0.1 g2" >> chr21.dat
-  echo "36.700516 0.1 g3" >> chr21.dat
-  echo "36.709131 0.1 g3" >> chr21.dat
+  echo "36.699115 0.1 s" >> chr21.dat
+  echo "36.749917 0.1 s" >> chr21.dat
 #+end_src
 #+begin_export latex
 Figure~\ref{fig:chr21} shows the plot of our region. The mappability
@@ -245,9 +250,7 @@ developed. If we lowered the mappability threshold from 0.9273 to
     chromosome 21, $\cm$ (\emph{c}) and the mappbaility (\emph{m});
     shown are also the $\cm$ threshold (\emph{tc}), the mappability
     threshold (\emph{tm}), the unique region picked based on this threshold
-    (\emph{u}), and the tree genes that intersect this region,
-    LOC105369308 (\emph{g1}), SIM2 (\emph{g2}), and LOC107985492
-    (\emph{g3}).}\label{fig:chr21}
+    (\emph{u}), and the SIM2 gene that intersects this region (\emph{s}).}\label{fig:chr21}
 \end{figure}
 #+end_export
 #+begin_src sh <<qDat.sh>>=
