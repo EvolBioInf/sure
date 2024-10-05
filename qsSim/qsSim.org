@@ -1,7 +1,276 @@
 #+begin_export latex
 \section{Introduction}
-Introduction to query/subject with simulated data.
+Apart from searching for unique regions within a query sequence with
+respect to that same query sequence, we ca search for unique regions
+in one or more query sequences with respect to one or more subject
+sequences. Given a sample of query and subject sequences, we can search
+for all query regions that are absent from the subjects, the
+\emph{difference} between query and subject. Our example tool for
+doing this is \ty{kec}~\cite{ber21:kec}.
+
+The difference between query and subject can be further reduced to the
+elements that are present in all queries. An example of this approach
+is implemented in the program \ty{fur}~\cite{hau21:fur,vie24:mar}. If
+the subject sequences are the closest distinct relatives of the query,
+these ubiquitous query regions are ideal starting material for
+developing diagnostic markers~\cite{san20:rec,vie24:mar}.
+
+To get an intuition for \ty{kec} and \ty{fur}, we apply them to
+simulated data. This is generated with the program
+\ty{stan}\footnote{\ty{github.com/evolbioinf/stan}}, which simulates
+markers in samples of target and neighbor sequences, as the name
+suggests.
+
+Then we also apply \ty{kec} and \ty{fur} to real genome sequences
+sampled from \emph{Legionella pneumophila} and its
+neighbors. \emph{L. pneumophila} causes Legionnaires' disease, a type
+of pneumonia, and typically spreads via water systems.
+
+
+\section{Simulated Data}
+The program \ty{stan} simulates separate genealogies, or
+\emph{coalescents}, for two samples of organisms, targets and
+neighbors---or queries and subjects in the parlance of our
+review---and then joins the two genealogies into the final
+coalescent. Figure~\ref{fig:coa} shows an example coalescent for 5
+queries and 7 subjects, which can be generated using the coalescent
+option, \ty{-c}, of \ty{stan} and plotted with \ty{plotTree}
+(Biobox). The sequences simulated sequences are stored in the
+directories \ty{queries} and \ty{subjects}.
+
+In addition,
+we run the program with output directories \ty{queries} and
+\ty{subjects}.
+\begin{figure}
+  \input{../qsSim/coaNames}
+  \begin{center}
+    \includegraphics{../qsSim/coa}
+  \end{center}
+  \caption{Example coalescent for 5 queries, $Q={q_1,q_2,...,q_5}$,
+    and 7 subjects, $S={s_1,s_2,...,s_7}$.}\label{fig:coa}
+\end{figure}
 #+end_export
 #+begin_src sh <<qsSim.sh>>=
-  echo "TO DO: qs_sim.sh"
+  stan -t 5 -n 7 -c -T queries -N subjects |
+      plotTree
 #+end_src
+#+begin_export latex
+Once \ty{stan} has constructed the coalescent, it simulates 10 kb DNA
+sequences along it and deletes the central 1 kb region 4501--5500 from
+all subjects, the \emph{marker} to be discovered in the queries. We
+can list the five query sequences.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  ls queries/
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+q1.fasta q2.fasta q3.fasta q4.fasta q5.fasta
+\end{verbatim}
+and the seven subject sequences.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  ls subjects/
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+s1.fasta s2.fasta s3.fasta s4.fasta s5.fasta s6.fasta s7.fasta
+\end{verbatim}
+We can also count the expected 50 kb of query material
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  cres queries/*
+#+end_src
+#+begin_export latex
+and the expected $7\times 9=63$ kb of subject material.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  cres subjects/*
+#+end_src
+#+begin_export latex
+We run the program \ty{kec} in \emph{exclude} mode to find the
+difference between the query sequences and the subject sequences. The
+difference consists of all query regions that are absent from the
+subjects. We look for regions of at least 100 bp length and store them
+in the file \ty{diff.fasta}.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  kec e -t queries/ -n subjects/  --min 100 -o diff.fasta
+#+end_src
+#+begin_export latex
+The file \ty{diff.fasta} contains 5 regions in FASTA format
+originating from the 5 queries, each 1097 bp long.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  grep '^>' diff.fasta
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+>KEC no. 51; len = 1097; orig: q3
+>KEC no. 51; len = 1097; orig: q2
+>KEC no. 50; len = 1097; orig: q1
+>KEC no. 50; len = 1097; orig: q5
+>KEC no. 51; len = 1097; orig: q4
+\end{verbatim}
+
+Using a simple version of Blast, \ty{sblast} (Biobox), we can place
+these regions on one of the query files to find their coordinates,
+which should be in the region 4501--5500.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  sblast diff.fasta queries/q1.fasta
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+#qa  sa  qs  qe    ss    se    score
+KEC  q1  1   1097  4490  5586  1089.0
+KEC  q1  1   1097  4490  5586  1089.0
+KEC  q1  1   1097  4490  5586  1097.0
+KEC  q1  1   1097  4490  5586  1085.0
+KEC  q1  1   1097  4490  5586  1089.0
+\end{verbatim}
+The region is correct, though we have a bit of overlap with homologous
+material.
+
+So far, the difference consists of regions that happens to occur in all
+queries. Let's add an extra 200 bp to \ty{q1.fasta} to generate a
+unique region that is private to that sequence.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  ranseq -l 200 |
+      tail -n +2 >> queries/q1.fasta
+#+end_src
+#+begin_export latex
+We rerun \ty{kec}.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  kec e -t queries/ -n subjects/  --min 100 -o diff.fasta
+#+end_src
+#+begin_export latex
+Now the difference consists of six regions, as expected, the five we
+found previously and the sixth we appended to \ty{q1.fasta}.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  grep '^>' diff.fasta
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+>KEC no. 51; len = 1097; orig: q2
+>KEC no. 50; len = 1097; orig: q1
+>KEC no. 106; len = 211; orig: q1
+>KEC no. 50; len = 1097; orig: q5
+>KEC no. 51; len = 1097; orig: q4
+>KEC no. 51; len = 1097; orig: q3
+\end{verbatim}
+When we localize the uniqu fragments identified with \ty{kec}, we find
+the expected six regions in the correct positions.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  sblast diff.fasta queries/q1.fasta
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+#qa  sa  qs  qe    ss    se     score
+KEC  q1  1   1097  4490  5586   1089.0
+KEC  q1  1   1097  4490  5586   1097.0
+KEC  q1  1   211   9990  10200  211.0
+KEC  q1  1   1097  4490  5586   1085.0
+KEC  q1  1   1097  4490  5586   1089.0
+KEC  q1  1   1097  4490  5586   1089.0
+\end{verbatim}
+Instead of the difference, the program \ty{fur} returns the
+intersection of the elements of the difference. To run \ty{fur}, we
+convert the input data first into a \ty{fur} database with the program
+\ty{makeFurDb}. It singles out a target representative, \ty{q5.fasta}
+in our case, and also calculates a Blast database.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  makeFurDb -t queries -n subjects -d qs.db
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+using q5.fasta as target representative
+making Blast database
+\end{verbatim}
+
+Now we run \ty{fur} to find 1006 bp of ubiquitous unique
+material. Notice that in contrast to the result obtained with
+\ty{kec}, we do not find the 200 bp that are private to
+\ty{q1.fasta}. We save the output from \ty{fur} in the file
+\ty{markers.fasta}.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  fur -d qs.db/ > markers.fasta
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+  Step           Sequences  Length  Ns
+  -------------  ---------  ------  --
+  Subtraction_1          1    1045   0
+  Intersection           1    1040   3
+  Subtraction_2          1    1006   3
+\end{verbatim}
+
+The output table of \ty{fur} shows in the last column that the
+sequence contains 3 unknown nucleotides, \ty{N}s, where there is a
+polymorphism in the intersection of the difference.
+
+The header of \ty{markers.fasta} shows where the 3 \ty{N}s are
+located, in our case at positions 265, 550, and 994.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  head -n 1 markers.fasta
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+>q5_(4495..5500)    3 265 550 994
+\end{verbatim}
+
+To double-check the positions of the unknown nucleotides, we write the
+script \ty{cut.awk}, in which we iterate over the unknown positions in
+the header line and run the program \ty{cutSeq} (Biobox) to cut out
+each one.
+#+end_export
+#+begin_src awk <<cut.awk>>=
+  NF > 2 {
+    for (i=3; i<=NF; i++) {
+      cmd = sprintf("cutSeq -r %d-%d markers.fasta",
+		    $i, $i)
+      system(cmd)
+    }
+  }
+#+end_src
+#+begin_export latex
+When we run \ty{cut.awk} on the header line of \ty{markers.fasta}, we
+get three \ty{N}s, as expected.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  head -n 1 markers.fasta |
+      awk -f cut.awk
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+>q5_(4495..5500)    3 265 550 994 265..265
+N
+>q5_(4495..5500)    3 265 550 994 550..550
+N
+>q5_(4495..5500)    3 265 550 994 994..994
+N
+\end{verbatim}
+#+end_export
+#+begin_export latex
+The header also shows the interval on the target representative
+returned, 4495--5500. When we check this with \ty{sblast}, we get the
+expected interval 4495--5500.
+#+end_export
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  sblast markers.fasta queries/q5.fasta
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+#qa              sa  qs  qe    ss    se    score
+q5_(4495..5500)  q5  1   1006  4495  5500  994.0
+\end{verbatim}
+So there is a tiny overlap of 6 bp with homologous material on the 5' end.
+#+end_export
