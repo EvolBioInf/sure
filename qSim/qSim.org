@@ -15,7 +15,7 @@ We begin by simulating the simplest case, single random
 sequences. They are unique throughout. Then we move on to picking
 unique regions from a non-unique background.
 
-\subsection{Only Unique Regions}
+\subsection*{Only Unique Regions}
 We use the program \ty{ranseq} from the Biobox
 package\footnote{\ty{github.com/evolbioinf/biobox}} to simulate a
 random sequence the length of the \emph{E. coli} genome, 5 Mb, and
@@ -260,7 +260,7 @@ this is 99.7\%, very close.
   echo '4987400/5000000 * 100' | bc -l
 #+end_src
 #+begin_export latex
-\subsection{Unique Regions in Homologous Background}
+\subsection*{Unique Regions in Homologous Background}
 Unique regions are usually picked on a non-unique, that is homologous,
 background. To simulate a homologous background, we first generate a
 mutated version of our original input sequence using the program
