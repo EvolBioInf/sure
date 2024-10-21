@@ -2,31 +2,26 @@
 \section{Introduction}
 Apart from searching for unique regions within a query sequence with
 respect to that same query sequence, we can search for unique regions
-in one or more query sequences with respect to one or more subject
-sequences. Given a sample of query and subject sequences, we can search
-for all query regions that are absent from the subjects, the
-\emph{difference} between query and subject. Our example tool for
-doing this is \ty{kec}~\cite{ber21:kec}.
-
-The difference between query and subject can be further reduced to the
-regions that are present in all queries, the intersection of all
-elements of the difference, if we regard the difference as a set of
-sets. An example of this approach is implemented in the program
+present in all queries sequences with respect to one or more subject
+sequences. Given a sample of query and subject sequences, we can
+search for all query regions that are absent from the subjects, the
+\emph{difference} between query and subject. An example of this
+approach is implemented in the program
 \ty{fur}~\cite{hau21:fur,vie24:mar}. If the subject sequences are the
 closest distinct relatives of the query, the ubiquitous query regions
 returned by \ty{fur} are ideal starting material for developing
 diagnostic markers~\cite{san20:rec,vie24:mar}.
 
-To get an intuition for \ty{kec} and \ty{fur}, we first apply them to
-simulated data. This is generated with the program
+To get an intuition for \ty{fur}, we first apply them to simulated
+data. This is generated with the program
 \ty{stan}\footnote{\ty{github.com/evolbioinf/stan}}, which simulates
 markers in samples of target and neighbor sequences, as the name
 suggests.
 
-Then we apply \ty{kec} and \ty{fur} to real genome sequences sampled
-from \emph{Legionella pneumophila} and its
-neighbors. \emph{L. pneumophila} causes legionnaires' disease, a type
-of pneumonia, and typically spreads via water systems.
+Then we apply \ty{fur} to real genome sequences sampled from
+\emph{Legionella pneumophila} and its neighbors. \emph{L. pneumophila}
+causes legionnaires' disease, a type of pneumonia, and typically
+spreads via water systems.
 
 
 \section{Simulated Data}
@@ -89,130 +84,14 @@ and the expected $7\times 9=63$ kb of neighbor material.
   cres neighbors/*
 #+end_src
 #+begin_export latex
-We run the program \ty{kec} in \emph{exclude} mode to find the
-difference between the target quences and the neighbor sequences. The
-difference consists of all target regions that are absent from the
-neighbors. We look for regions of at least 100 bp length and store them
-in the file \ty{diff.fasta}.
-#+end_export
-#+begin_src sh <<qsSim.sh>>=
-  kec e -t targets/ -n neighbors/  --min 100 -o diff.fasta
-#+end_src
-#+begin_export latex
-The file \ty{diff.fasta} contains 5 regions in FASTA format
-originating from the 5 targets, each 1039 bp long.
-#+end_export
-#+begin_src sh <<qsSim.sh>>=
-  grep '^>' diff.fasta
-#+end_src
-#+begin_export latex
-\begin{verbatim}
->KEC no. 74; len = 1039; orig: t3
->KEC no. 75; len = 1039; orig: t1
->KEC no. 75; len = 1039; orig: t2
->KEC no. 75; len = 1039; orig: t4
->KEC no. 75; len = 1039; orig: t5
-\end{verbatim}
-In your output the sequences may well be ordered differently, even
-though we have the same input. This is presumably because in Go---the
-programming language \ty{kec} is written in---the order in which keys
-are accessed when iterating over a map is
-random~\cite[p. 95]{don16:go}. We can sort the sequences using the
-script \ty{sortSeq.sh}, which we'll write in a moment.
-#+end_export
-#+begin_src sh <<qsSim.sh>>=
-  bash sortSeq.sh diff.fasta > tmp
-  mv tmp diff.fasta
-#+end_src
-#+begin_export latex
-To sort the sequences, we convert their FASTA format to a table using
-the program \ty{fasta2tab} (Biobox). The table consists of two
-tab-separated columns, header and sequence, with one row per
-sequence. We sort the table, convert it back to FASTA format, and wrap
-the sequence data with the program \ty{wrapSeq} (Biobox).
-#+end_export
-#+begin_src sh <<sortSeq.sh>>=
-  fasta2tab $1 |
-      sort |
-      awk '{print ">" $0}' |
-      tr '\t' '\n' |
-      wrapSeq
-#+end_src
-#+begin_export latex
-Using a simple version of Blast, \ty{sblast} (Biobox), we can locate
-these regions in one of the target sequences to find their
-coordinates, which should be 4501--5500.
-#+end_export
-#+begin_src sh <<qsSim.sh>>=
-  sblast diff.fasta targets/t1.fasta
-#+end_src
-#+begin_export latex
-\begin{verbatim}
-#qa  sa  qs  qe    ss    se    score
-KEC  t1  1   1039  4490  5528  1039.0
-KEC  t1  1   1039  4490  5528  1039.0
-KEC  t1  1   1039  4490  5528  1039.0
-KEC  t1  1   1039  4490  5528  1031.0
-KEC  t1  1   1039  4490  5528  1039.0
-\end{verbatim}
-The region is correct, though we have a bit of overlap with homologous
-material, 11 bp 5' and 28 bp 3'.
 
-So far, the difference consists of regions that happen to occur in all
-targets. Let's add an extra 200 bp to \ty{t1.fasta} to generate a
-unique region that is private to that sequence.
-#+end_export
-#+begin_src sh <<qsSim.sh>>=
-  ranseq -l 200 |
-      tail -n +2 >> targets/t1.fasta
-#+end_src
-#+begin_export latex
-We rerun \ty{kec} and sort the result.
-#+end_export
-#+begin_src sh <<qsSim.sh>>=
-  kec e -t targets/ -n neighbors/  --min 100 -o diff.fasta
-  bash sortSeq.sh diff.fasta > tmp
-  mv tmp diff.fasta
-#+end_src
-#+begin_export latex
-Now the difference consists of six regions, as expected, the five we
-found previously and the sixth we appended to \ty{t1.fasta}.
-#+end_export
-#+begin_src sh <<qsSim.sh>>=
-  grep '^>' diff.fasta
-#+end_src
-#+begin_export latex
-\begin{verbatim}
->KEC no. 144; len = 215; orig: t1
->KEC no. 74; len = 1039; orig: t3
->KEC no. 75; len = 1039; orig: t1
->KEC no. 75; len = 1039; orig: t2
->KEC no. 75; len = 1039; orig: t4
->KEC no. 75; len = 1039; orig: t5
-\end{verbatim}
-When we localize the unique fragments identified with \ty{kec}, we find
-the expected six regions in the correct positions.
-#+end_export
-#+begin_src sh <<qsSim.sh>>=
-  sblast diff.fasta targets/t1.fasta
-#+end_src
-#+begin_export latex
-\begin{verbatim}
-#qa  sa  qs  qe    ss    se     score
-KEC  t1  1   215   9986  10200  215.0
-KEC  t1  1   1039  4490  5528   1039.0
-KEC  t1  1   1039  4490  5528   1039.0
-KEC  t1  1   1039  4490  5528   1039.0
-KEC  t1  1   1039  4490  5528   1031.0
-KEC  t1  1   1039  4490  5528   1039.0
-\end{verbatim}
-Instead of the difference, the program \ty{fur} returns the
-intersection of the elements of the difference. To run \ty{fur}, we
-convert the input data first into a \ty{fur} database with the program
-\ty{makeFurDb}. It singles out a target representative, by default the
-shortest sequence. If the targets are all of the same length, as in
-our example, the program picks a random one of them, \ty{t2.fasta} in
-our case. The program \ty{makeFurDb} also calculates a Blast database.
+The program \ty{fur} returns the intersection of the elements of the
+difference. To run \ty{fur}, we convert the input data first into a
+\ty{fur} database with the program \ty{makeFurDb}. It singles out a
+target representative, by default the shortest sequence. If the
+targets are all of the same length, as in our example, the program
+picks a random one of them, \ty{t2.fasta} in our case. The program
+\ty{makeFurDb} also calculates a Blast database.
 #+end_export
 #+begin_src sh <<qsSim.sh>>=
   makeFurDb -t targets -n neighbors -d fur.db
@@ -222,12 +101,11 @@ our case. The program \ty{makeFurDb} also calculates a Blast database.
 using t2.fasta as target representative
 making Blast database
 \end{verbatim}
-
-Now we run \ty{fur} to find 1008 bp of ubiquitous unique
-material. Notice that in contrast to the result obtained with
-\ty{kec}, we do not find the 200 bp that are private to
-\ty{t1.fasta}. We save the output from \ty{fur} in the file
-\ty{markers.fasta}.
+We run the program \ty{fur} to find differences between the target and
+the neighbor sequences. The difference consists of all target regions
+that are absent from the neighbors and present in all targets. We look
+for regions of at least 100 bp length. We find 1008 bp of ubiquitous
+unique material and save the output in the file \ty{markers.fasta}.
 #+end_export
 #+begin_src sh <<qsSim.sh>>=
   fur -d fur.db/ > markers.fasta
@@ -276,7 +154,7 @@ get two \ty{N}s, as expected.
 #+end_export
 #+begin_src sh <<qsSim.sh>>=
   head -n 1 markers.fasta |
-      awk -f cut.awk
+      awk -f scripts/cut.awk
 #+end_src
 #+begin_export latex
 \begin{verbatim}
