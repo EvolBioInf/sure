@@ -1,10 +1,9 @@
 #+begin_export latex
 \section{Real Data}
 We have seen how to simulate samples of target and neighbor sequences
-with \ty{stan}. Given such data, we can use \ty{kec} to extract the
-expected difference between targets and neighbors from it, and we can
-use \ty{fur} to extract the intersection of the difference. This gives
-us confidence to now turn to real data.
+with \ty{stan}. Given such data, we can use \ty{fur} to extract the
+intersection of the difference. This gives us confidence to now turn
+to real data.
 
 As an example of real data we picked the bacterium \emph{Legionella
 pneumophila}, which causes legionaires' disease in humans, a form of
@@ -268,73 +267,7 @@ to get the neighbors.
 	  ln -s $(pwd)/all/$a $(pwd)/neighbors/$a
       done
 #+end_src
-#+begin_export latex
-\subsection*{Calculate Difference}
-The difference between target and neighbors consists of all target
-regions that have no homologue among the neighbors. As with the
-simulated data before, we can run the program \ty{kec} in
-\emph{exlusion} mode to find these regions with minimal length
-100. This time we use k-mers of length 15, as recommended in the
-\ty{kec} tutorial. We save the result to \ty{diff.fasta} and sort it.
-#+end_export
-#+begin_src sh <<qsDat.sh>>=
-  kec e -t targets/ -n neighbors/ --min 100 -k 15 -o diff.fasta
-  bash sortSeq.sh diff.fasta > tmp
-  mv tmp diff.fasta
-#+end_src
-#+begin_export latex
-We look at the head of \ty{diff.fasta}.
-#+end_export
-#+begin_src sh <<qsDat.sh>>=
-  head diff.fasta
-#+end_src
-#+begin_export latex
-\small
-\begin{verbatim}
->KEC no. 10000; len = 110; orig: CP016873.1 Legionella pneumophila...
-ATAGCTCTAAATCCTCAGCACAGAGAAGCTCAATTTTACTTAGGTATTTTGCATTTGGAAGACAATTTAC
-TCTCAGAAGCAGAACAGGCATTTCAAAAAGTGTTAGAGCA
->KEC no. 10000; len = 125; orig: CP021281.1 Legionella pneumophila...
-CCAGTGGCATTGATCTGGCATTTGAATTTATTTCAACCATTGCTGGCAATGATGTTGCGGGAAAAGTGCA
-GTTGCTTTTTGAATACTTCCCTGAGTGCAAGCTGTATTCCCAGCCTGCTATGGTG
->KEC no. 10000; len = 144; orig: CP061840.1 Legionella pneumophila...
-ATAAATTAAATCAGATGCTTCGTTGATAAGTTCTTCTTTATTGTTGCTCACAGCAGCGATCACTGCTTCT
-ACCGACTCTTCTCCTAATTTTTGAGCACATCGGTTCACACCAGAATCCAAGAGTTGAGCAGTATAACTGT
-TTGG
-\end{verbatim}
-\normalsize
-To sample the contents of \ty{diff.fasta}, we extract its first entry,
-which consists of the first three lines.
-#+end_export
-#+begin_src sh <<qsDat.sh>>=
-  head -n 3 diff.fasta > diff1.fasta
-#+end_src
-#+begin_export latex
-Now we compare this to the target set with the program \ty{sblast}
-(Biobox), where we expect at least one, perhaps several hits.
-#+end_export
-#+begin_src sh <<qsDat.sh>>=
-  sblast diff1.fasta targets/*.fna |
-      tail -n +2 |
-      awk '{print $2}' |
-      sort |
-      uniq |
-      wc -l
-#+end_src
-#+begin_export latex
-In fact we find 27 hits, out of 27 possible. Now we compare
-\ty{diff1.fasta} against the neighborhood, where we expect no hit. In
-fact, we find 15 out of 15 possible hits. This region is not unique to
-the target.
-#+end_export
-#+begin_src sh <<qsDat.sh>>=
-  sblast diff1.fasta neighbors/*.fna  |
-      tail -n +2 |
-      awk '{print $2}' |
-      sort |
-      uniq |
-      wc -l
-#+end_src
+
 #+begin_export latex
 \subsection*{Find Markers}
 We now turn to determining the regions that appear in all targets but
@@ -354,9 +287,9 @@ Now we run \ty{fur} and save the output in the file \ty{markers.fasta}
   fur -d fur.db > markers.fasta
 #+end_src
 #+begin_export latex
-Like with the output of \ty{kec}, we take the first sequence found,
-which happens to occupy the first three lines of file
-\ty{markers.fasta} and store it in \ty{markers1.fasta}.
+We take the first sequence found, which happens to occupy the first
+three lines of file \ty{markers.fasta} and store it in
+\ty{markers1.fasta}.
 #+end_export
 #+begin_src sh <<qsDat.sh>>=
   head -n 3 markers.fasta > markers1.fasta
