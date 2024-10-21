@@ -244,7 +244,7 @@ developed. If we lowered the mappability threshold from 0.9273 to
 36,692,001--36,708,000, also intersecting the SIM gene (not shown).
 \begin{figure}
   \begin{center}
-    \includegraphics{../qDat/chr21}
+    \includegraphics[width=0.8\textwidth]{../qDat/chr21_clean}
   \end{center}
   \caption{Two measures of uniqueness along a portion of human
     chromosome 21, $\cm$ (\emph{c}) and the mappbaility (\emph{m});
