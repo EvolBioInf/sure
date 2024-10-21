@@ -90,7 +90,7 @@ and the expected $7\times 9=63$ kb of neighbor material.
 #+end_src
 #+begin_export latex
 We run the program \ty{kec} in \emph{exclude} mode to find the
-difference between the target quences and the neighbor sequences. The
+difference between the target sequences and the neighbor sequences. The
 difference consists of all target regions that are absent from the
 neighbors. We look for regions of at least 100 bp length and store them
 in the file \ty{diff.fasta}.
