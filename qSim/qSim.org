@@ -1,0 +1,500 @@
+#+begin_export latex
+\section{Introduction}
+The simplest search for unique regions is within one sequence, or
+within a set of sequences that are effectively regarded as one. In the
+following we search such query sequences for unique regions using the
+two programs \ty{genmap}~\cite{poc20:gen} and
+\ty{macle}~\cite{pir19:hig}. We first explore these programs by
+applying them to simulated sequences to get an intuition about their
+function. Then we show how \ty{genmap} and \ty{macle} can be used to
+explore real sequence data by searching for unique regions in the
+shortest chromosome of the human genome, chromosome 21.
+
+\section{Simulated Data}
+We begin by simulating the simplest case, single random
+sequences. They are unique throughout. Then we move on to picking
+unique regions from a non-unique background.
+
+\subsection*{Only Unique Regions}
+We use the program \ty{ranseq} from the Biobox
+package\footnote{\ty{github.com/evolbioinf/biobox}} to simulate a
+random sequence the length of the \emph{E. coli} genome, 5 Mb, and
+save it in the file \ty{q.fasta}.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  ranseq -l 5000000 > q.fasta
+#+end_src
+#+begin_export latex
+To calculate the mappability of this sequence, we first index it and
+save the index to the file \ty{q\_gm.idx}.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  genmap index -F q.fasta -I q_gm.idx
+#+end_src
+#+begin_export latex
+Then we calculate the mappability with k-mers of length 15 (\ty{-K})
+that are matched without errors (\ty{-E}) with output written to
+\ty{q\_gm.out} (\ty{-O}) in text format (\ty{-t}).
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  genmap map -I q_gm.idx/ -K 15 -E 0 -O q_gm.out -t 
+#+end_src
+#+begin_export latex
+This generates the output file \ty{q\_gm.out.txt}, which contains the
+output in a particular version of the FASTA format, where the header
+is followed by single row of data. The data row contains a mappability
+value for each position in the input sequence, five million
+mappability values in our case. To make this lengthy row of data
+easier to parse, we wrap it into shorter rows with the program
+\ty{wrapSeq}, also from the Biobox, and take a look at the first ten
+rows.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  wrapSeq q_gm.out.txt | head
+#+end_src
+#+begin_export latex
+\small
+\begin{verbatim}
+>Rand1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 0.5 0.5 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+\end{verbatim}
+\normalsize
+
+Remember, our input sequence is random, so your result is bound to
+look slightly different. It should, however, also be dominated by
+``1''s, indicating that almost all 15-mers in a random 5 Mb sequence are
+unique.
+
+To plot the mappabilities along the sequence, we write them as pairs
+of x,y values. Since plotting 5 million values overwhelms our plotting
+program \ty{plotLine} (Biobox), we sample just 1\% of the
+values.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  tail -n +2  q_gm.out.txt |
+      tr ' ' '\n' |
+      awk 'NR%100==0{print NR/1000000, $1}' |
+      plotLine -x "Position (Mb)" -y Mappability
+#+end_src
+#+begin_export latex
+The resulting Figure~\ref{fig:qgm1} shows that the mappability is
+usually 1, sometimes 0.5 and rarely 0.3, which corresponds to k-mers
+that are repeated once, twice, or three times.
+\begin{figure}
+  \begin{center}
+    \includegraphics{../qSim/q_gm1.ps}
+  \end{center}
+  \caption{Mappability along 5 Mb of random sequence.}\label{fig:qgm1}
+\end{figure}
+
+Clearly, in a random sequence everything is unique. But if we didn't
+know we were dealing with a random input sequence, how would we pick
+unique regions from the output of \ty{genmap}? The answer is, by using
+a sliding window analysis.
+
+The program \ty{sw} (Biobox) implements a sliding window analysis on a
+column of numbers. For some window length, $w$, \ty{sw} reads the $w$
+first numbers, calculates their average, $a$ and prints the pair
+$(w/2,a)$, that is, the midpoint of the first window and its
+value. Then the window is slid to the right, by default by a tenth of
+the window length, and the procedure is repeated. We run \ty{sw} with
+window length 1000. Figure~\ref{fig:qgm2} shows that, as expected, the
+values are uniformly close to 1.
+\begin{figure}
+\begin{center}
+\includegraphics{../qSim/q_gm2}
+\end{center}
+\caption{Sliding window analysis of mappability with 1 kb windows
+  along 5 Mb of random sequence.}\label{fig:qgm2}
+\end{figure}
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  tail -n +2  q_gm.out.txt |
+      tr ' ' '\n' |
+      sw -w 1000 |
+      awk '{print $2/1000000, $3}' |
+      plotLine -x "Position (Mb)" -y Mappability -Y "0:1.1"
+#+end_src
+#+begin_export latex
+To actually pick regions, we need to classify windows as either unique
+or repeat. We do this using a threshold mappability, $t_{\rm m}$; if
+the mappability of a window is greater or equal to $t_{\rm m}$, it is
+deemed unique. To estimate this threshold, we realize that the values
+from our windows analysis of a random sequence constitute the relevant
+null distribution. So we cut off the lowest 5\% of the windowed
+mappability values. Since the windows advance by $1000/10=100$ steps,
+there are roughly $5\times 10^6/100=5\times 10^4$ windows, of which
+5\% are 2500. So we sort the values and look up the 2500-th entry in
+that distribution, which in our case is 0.992.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  tail -n +2  q_gm.out.txt |
+      tr ' ' '\n' |
+      sw -w 1000 |
+      cut -f 3 |
+      sort -n |
+      head -n 2500 |
+      tail -n 1
+#+end_src
+#+begin_export latex
+We pass the mappability threshold to the program \ty{merwin} from the
+Auger package\footnote{github.com/evolbioinf/auger}, which merges
+windows that exceed some threshold into non-overlapping intervals.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  tail -n +2  q_gm.out.txt |
+      tr ' ' '\n' |
+      sw -w 1000 |
+      merwin -t 0.992 -w 1000 |
+      head
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+stdin   1       120100  0.9955
+stdin   120201  164500  0.9954
+stdin   164501  179900  0.9958
+stdin   180001  289500  0.9955
+...
+\end{verbatim}
+We might have expected to get a single interval. Instead, we find a
+largish number of them, 56 in our case. However, they sum to 4,990,800
+bp.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  tail -n +2  q_gm.out.txt |
+      tr ' ' '\n' |
+      sw -w 1000 |
+      merwin -t 0.992 -w 1000 |
+      awk '{l=$3-$2+1;s+=l}END{print s}'
+#+end_src
+#+begin_export latex
+The 4,990,800 bp we found, are 99.8\% of the 5 Mb we should have
+found---not bad for a classifier.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  echo '4990800/5000000*100' | bc -l
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+99.81600000000000000000
+\end{verbatim}
+Instead of the mappability, the program \ty{macle} calculates the
+match complexity, $\cm$, which, like the mappability, has a lower
+bound of 0. However, unlike the mappability, which has an upper bound
+of 1, the $\cm$ has an \emph{expectation} of 1 for random
+sequences. To see what this looks like, we calculate the \ty{macle}
+index of our sequence and save it to the file \ty{q\_ma.idx}.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  macle -s q.fasta > q_ma.idx
+#+end_src
+#+begin_export latex
+Figure~\ref{fig:qma1} shows the sliding window analysis of $\cm$, which
+looks similar to the sliding window analysis of the mappability
+in Figure~\ref{fig:qgm2}, though it is also clear that the $\cm$ is
+centered on 1, while the mappability is bound by 1.
+\begin{figure}
+  \begin{center}
+    \includegraphics{../qSim/q_ma1}
+  \end{center}
+  \caption{Sliding window analysis of $\cm$ with 1 kb windows along a
+    random 5 Mb sequence.}\label{fig:qma1}
+\end{figure}
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  macle -w 1000 q_ma.idx |
+      awk '{print $2/1000000, $3}' |
+      plotLine -x "Position (Mb)" -y C_m -Y "0:1"
+#+end_src
+#+begin_export latex
+Since the null distribution of $\cm$ is known~\cite{pir19:hig}, we can
+calculate the threshold for picking unique regions rather than look it
+up from a simulated null distribution like we did for the
+mappability. We calculate the $\cm$ threshold with the program
+\ty{mantile} (Auger). For our example data, this is 0.9852, if we
+again take a cut-off probability of 0.05.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  mantile -l 5000000 -w 1000 -g 0.5 -p 0.05
+#+end_src
+#+begin_export latex
+So we can again extract the unique regions with \ty{merwin}.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  macle -w 1000 q_ma.idx |
+      merwin -t 0.9852 -w 1000 |
+      head
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+Rand1   1       24400   1
+Rand1   24401   62500   1.002
+Rand1   63301   136500  1.002
+Rand1   136501  217900  1.002
+...
+\end{verbatim}
+#+end_export
+#+begin_export latex
+We now sum the lengths of the regions classified as unique, 4,987,400
+bp in our case, roughly 4.99 Mb.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  macle -w 1000 q_ma.idx |
+      merwin -t 0.9852 -w 1000 |
+      awk '{l=$3-$2+1;s+=l}END{print s}'
+#+end_src
+#+begin_export latex
+We end our exploration of single random sequences, by calculating the
+percentage of what we should have found, the full 5 Mb. In our case
+this is 99.7\%, very close.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  echo '4987400/5000000 * 100' | bc -l
+#+end_src
+#+begin_export latex
+\subsection*{Unique Regions in Homologous Background}
+Unique regions are usually picked on a non-unique, that is homologous,
+background. To simulate a homologous background, we first generate a
+mutated version of our original input sequence using the program
+\ty{mutator} (Biobox). With default settings, \ty{mutator} converts
+the input sequence into its homologue diverged by 1\% mutations per
+site.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  mutator q.fasta > q2.fasta
+#+end_src
+#+begin_export latex
+Then we concatenate the original query and its homolog into a new
+query, where nothing should be unique.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  echo ">q3" > q3.fasta
+  cat q.fasta q2.fasta |
+      grep -v '^>' >> q3.fasta
+#+end_src
+#+begin_export latex
+We calculate the \ty{genmap} index and the mappability values.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  genmap index -F q3.fasta -I q3_gm.idx
+  genmap map -I q3_gm.idx -K 15 -E 0 -O q3_gm.out -t
+#+end_src
+#+begin_export latex
+We carry out the sliding window analysis of the mappability and plot
+it along the first 5 Mb, our original sequence. We save the results in
+\ty{q3.map}.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  tail -n +2 q3_gm.out.txt |
+      tr ' ' '\n' |
+      head -n 5000000 |
+      sw -w 1000 > q3.map
+#+end_src  
+#+begin_export latex
+On the background of the homologous sequence, most k-mers are found
+twice, once in the original and once in the homolog. However, a
+substantial number of k-mers will be mutated and thus become
+unique. The probability of a 15-mer mutating at a mutation rate of
+1\%, is the complement of it not mutating,
+\[
+1-\left(1-\frac{1}{100}\right)^{15}\approx 0.14
+\]
+If we ignore all k-mers apart from singletons and doubletons, we
+expect an average mappability of
+\[
+0.5(1-0.14) + 0.14 = 0.57.
+\]
+The plot of the mappabilities in Figure~\ref{fig:qgm3} shows that this
+is indeed the case, with no mappability values close to 1.
+\begin{figure}
+  \begin{center}
+    \includegraphics{../qSim/q_gm3}
+  \end{center}
+  \caption{}\label{fig:qgm3}
+\end{figure}
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  awk '{print $2/1000000, $3}' q3.map |
+      plotLine -x "Position (Mb)" -y Mappability -Y "0:1.1"
+#+end_src    
+#+begin_export latex
+We shouldn't pick any unique regions from \ty{q3.fasta}, but let's
+check this ``negative control'' works. Since the sequence we analyze
+has doubled in length, we need a new mappability threshold. We
+calculate this from a shuffled, or randomized, version of
+\ty{q3.fasta}. This is generated with the program \ty{randomizeSeq}
+(Biobox). We save the randomized sequence in \ty{q3r.fasta}.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  randomizeSeq q3.fasta > q3r.fasta
+#+end_src
+#+begin_export latex
+We index the randomized sequence and calculate its mappability.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  genmap index -F q3r.fasta -I q3r_gm.idx
+  genmap map -I q3r_gm.idx -K 15 -E 0 -O q3r_gm.out -t
+#+end_src
+#+begin_export latex
+Now we carry out the sliding window analysis and pick the 5000-th
+entry in the null distribution of mappability values, 0.986.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  grep -v '^>' q3r_gm.out.txt |
+      tr ' ' '\n' |
+      sw -w 1000 |
+      cut -f 3 q3r.map |
+      sort -n |
+      head -n 5000 |
+      tail -n 1
+#+end_src
+#+begin_export latex
+The search for unique regions with this threshold finds nothing, as
+expected.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  merwin -t 0.986 q3.map
+#+end_src
+#+begin_export latex
+We calculate the \ty{macle} index of our new query.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  macle -s q3.fasta > q3_ma.idx
+#+end_src
+#+begin_export latex
+A sliding window plot of $\cm$ shows strongly fluctuating values
+around a mean of 0.2 (Figure~\ref{fig:qma2}). However, none of the
+values are close to 1.
+\begin{figure}
+  \begin{center}
+    \includegraphics{../qSim/q3_ma}
+  \end{center}
+  \caption{Sliding window analysis of $\cm$ in 1 kb windows along a random sequence
+    on the background of its 1\% diverged homolog.}\label{fig:qma2}
+\end{figure}
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  macle -w 1000 q3_ma.idx |
+      awk '{print $2/1000000, $3}' |
+      plotLine -Y "0:1" -x "Position (Mb)" -y C_m
+#+end_src
+#+begin_export latex
+A formal analysis of the sliding windows should not pick up any unique
+regions. So let's just check that's the case. Since the query is now
+twice as long as before, we recalculate the $\cm$ threshold, which
+changes slightly to 0.9855.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  mantile -l 10000000 -w 1000 -g 0.5 -p 0.05
+#+end_src
+#+begin_export latex
+Then we search for unique regions and find none, as expected.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  macle -w 1000 q3_ma.idx |
+      merwin -t 0.9855 -w 1000
+#+end_src
+#+begin_export latex
+In order to generate a discrete unique region on a homologous
+background, we produce a fourth query using the original sequence and
+its homolog, from which we excise 2 kb right in the middle using the
+program \ty{cutSeq} (Biobox).
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  echo ">q4" > q4.fasta
+  tail -n +2 q.fasta >> q4.fasta
+  cutSeq -r 1-2499000,2501001-5000000 -j q2.fasta >> q4.fasta
+#+end_src
+#+begin_export latex
+We calculate the \ty{genmap} index and the mappability values.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  genmap index -F q4.fasta -I q4_gm.idx
+  genmap map -I q4_gm.idx -K 15 -E 0 -O q4_gm.out -t
+#+end_src
+#+begin_export latex
+We carry out the sliding window analysis and save the mappability
+windows of the original sequence in \ty{g4.map}.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  grep -v '^>' q4_gm.out.txt |
+      tr ' ' '\n' |
+      head -n 5000000 |
+      sw -w 1000 > q4.map
+#+end_src
+#+begin_export latex
+Figure~\ref{fig:qgm4} shows a plot of the mappability along the
+original sequence with the central unique region clearly indicated by
+the spike to approximately 1.
+\begin{figure}
+  \begin{center}
+    \includegraphics{../qSim/q_gm4}
+  \end{center}
+  \caption{Sliding window analysis of mappability along a random 5 Mb
+    sequence on the background of a sequence diverged by 1\%; the
+    background sequence also has a 2 kb deletion at its center which
+    shows up as the peak in the middle. }\label{fig:qgm4}
+\end{figure}
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+      awk '{print $2/1000000, $3}' q4.map |
+      plotLine -x "Position (Mb)" -y Mappability -Y "0:1.1"
+#+end_src
+#+begin_export latex
+It is easy to see the peak in Figure~\ref{fig:qgm4}. With the same
+ease we can use \ty{merwin} and our mappability threshold of 0.986 to
+pick precisely the 2 kb we should be picking.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  merwin -w 1000 -t 0.986 q4.map
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+stdin   2499001 2501000 0.995
+\end{verbatim}
+We now turn from \ty{genmap} to \ty{macle} and calculate its index.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  macle -s q4.fasta > q4_ma.idx
+#+end_src
+#+begin_export latex
+Figure~\ref{fig:qma3} shows the sliding window analysis of the
+original sequence on the background of its homolog with deletion. We
+can clearly see on a background of homologous material a single
+central peak of $\cm=1$, indicating the unique region we just created.
+\begin{figure}
+  \begin{center}
+    \includegraphics{../qSim/q4_ma}
+  \end{center}
+  \caption{Sliding window analysis of $\cm$ along a random 5 Mb
+    sequence on the background of a sequence diverged by 1\%; the
+    background sequence also has a 2 kb deletion at its center which
+    shows up as the peak in the middle.}\label{fig:qma3}
+\end{figure}
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  macle -n q4 -w 1000 q4_ma.idx |
+      awk '{print $2/1000000, $3}' |
+      plotLine -x "Position (Mb)" -y "C_m"
+#+end_src
+#+begin_export latex
+The big question is, can we now pick the unique 2 kb? It turns out we
+can again do so with great accuracy.
+#+end_export
+#+begin_src sh <<qSim.sh>>=
+  macle -w 1000 q4_ma.idx |
+      merwin -t 0.9855 -w 1000
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+q4      2499001 2501100 1.04
+\end{verbatim}
+#+end_export

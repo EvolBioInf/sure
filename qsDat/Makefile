@@ -1,0 +1,11 @@
+SH = qsDat
+
+all: $(SH).sh
+
+$(SH).sh: $(SH).org
+	bash ../scripts/org2nw $(SH).org | notangle -R$(SH).sh > $(SH).sh
+test: $(SH).sh
+	cp ../scripts/sortSeq.sh .
+	bash qsDat.sh
+clean:
+	rm -rf $(SH).sh acc.txt all all.nwk diff1.fasta diff.fasta frag.fasta fur.db markers1.fasta markers.fasta md5sum.txt nacc.txt ncbi_dataset* ndata ndata.zip neidb_08_oct_24 neighbors README.md tacc.txt targets tdata tdata.zip

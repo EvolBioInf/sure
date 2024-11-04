@@ -1,0 +1,182 @@
+#+begin_export latex
+\section{Introduction}
+Apart from searching for unique regions within a query sequence with
+respect to that same query sequence, we can search for unique regions
+present in all queries sequences with respect to one or more subject
+sequences. Given a sample of query and subject sequences, we can
+search for all query regions that are absent from the subjects, the
+\emph{difference} between query and subject. An example of this
+approach is implemented in the program
+\ty{fur}~\cite{hau21:fur,vie24:mar}. If the subject sequences are the
+closest distinct relatives of the query, the ubiquitous query regions
+returned by \ty{fur} are ideal starting material for developing
+diagnostic markers~\cite{san20:rec,vie24:mar}.
+
+To get an intuition for \ty{fur}, we first apply them to simulated
+data. This is generated with the program
+\ty{stan}\footnote{\ty{github.com/evolbioinf/stan}}, which simulates
+markers in samples of target and neighbor sequences, as the name
+suggests.
+
+Then we apply \ty{fur} to real genome sequences sampled from
+\emph{Legionella pneumophila} and its neighbors. \emph{L. pneumophila}
+causes legionnaires' disease, a type of pneumonia, and typically
+spreads via water systems.
+
+
+\section{Simulated Data}
+The program \ty{stan} simulates separate genealogies, or
+\emph{coalescents}, for two samples of organisms, targets and
+neighbors---or \emph{queries} and \emph{subjects} in the parlance of
+our review---and then joins the two genealogies into the final
+coalescent. Figure~\ref{fig:coa} shows an example coalescent for 5
+targets and 7 neighbors generated with \ty{stan} and plotted with
+\ty{plotTree} (Biobox). Apart form the coalescent option, \ty{-c}, we
+also seed the random number generator of \ty{stan} with \ty{-s} to
+ensure we are all looking at the same data. If you'd like more
+variety, just leave of the \ty{-s} option.
+\begin{figure}
+  \input{../qsSim/coaNames}
+  \begin{center}
+    \includegraphics{../qsSim/coa}
+  \end{center}
+  \caption{Example coalescent for 5 targets, $T={t_1,t_2,...,t_5}$,
+    and 7 neighbors, $N={n_1,n_2,...,n_7}$.}\label{fig:coa}
+\end{figure}
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  stan -t 5 -n 7 -c -s 2 |
+      plotTree
+#+end_src
+#+begin_export latex
+Once \ty{stan} has constructed the coalescent, it simulates 10 kb DNA
+sequences along it and deletes the central 1 kb region, interval
+4501--5500, from all neighbors, the \emph{marker} to be discovered in
+the targets. The target sequences are written the directory
+\ty{targets}, the neighbors to the directory \ty{neighbors}.  We can
+list the five target sequences,
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  ls targets/
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+t1.fasta t2.fasta t3.fasta t4.fasta t5.fasta
+\end{verbatim}
+and the seven neighbor sequences.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  ls neighbors/
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+n1.fasta n2.fasta n3.fasta n4.fasta n5.fasta n6.fasta n7.fasta
+\end{verbatim}
+We can also count the expected 50 kb of target material,
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  cres targets/*
+#+end_src
+#+begin_export latex
+and the expected $7\times 9=63$ kb of neighbor material.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  cres neighbors/*
+#+end_src
+#+begin_export latex
+The program \ty{fur} returns the intersection of the elements of the
+difference. To run \ty{fur}, we convert the input data first into a
+\ty{fur} database with the program \ty{makeFurDb}. It singles out a
+target representative, by default the shortest sequence. If the
+targets are all of the same length, as in our example, the program
+picks a random one of them, \ty{t2.fasta} in our case. The program
+\ty{makeFurDb} also calculates a Blast database.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  makeFurDb -t targets -n neighbors -d fur.db
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+using t2.fasta as target representative
+making Blast database
+\end{verbatim}
+We run the program \ty{fur} to find differences between the target and
+the neighbor sequences. The difference consists of all target regions
+that are absent from the neighbors and present in all targets. We look
+for regions of at least 100 bp length. We find 1008 bp of ubiquitous
+unique material and save the output in the file \ty{markers.fasta}.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  fur -d fur.db/ > markers.fasta
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+  Step           Sequences  Length  Ns
+  -------------  ---------  ------  --
+  Subtraction_1          2    1155   0
+  Intersection           2    1146   2
+  Subtraction_2          1    1008   2
+\end{verbatim}
+
+The output table of \ty{fur} shows in the last column that the
+sequence contains 3 unknown nucleotides, \ty{N}s, where there is a
+polymorphism in the intersection of the difference.
+
+The header of \ty{markers.fasta} shows that the two \ty{N}s are
+located at positions 247 and 786.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  head -n 1 markers.fasta
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+>t2_(4492..5499)    2 246 786
+\end{verbatim}
+
+To double-check the positions of the unknown nucleotides, we write the
+script \ty{cut.awk}, in which we iterate over the unknown positions in
+the header line and run the program \ty{cutSeq} (Biobox) to cut out
+each one.
+#+end_export
+#+begin_src awk <<cut.awk>>=
+  NF > 2 {
+    for (i=3; i<=NF; i++) {
+      cmd = sprintf("cutSeq -r %d-%d markers.fasta",
+		    $i, $i)
+      system(cmd)
+    }
+  }
+#+end_src
+#+begin_export latex
+When we run \ty{cut.awk} on the header line of \ty{markers.fasta}, we
+get two \ty{N}s, as expected.
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  head -n 1 markers.fasta |
+      awk -f scripts/cut.awk
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+>t2_(4492..5499)    2 246 786 246..246
+N
+>t2_(4492..5499)    2 246 786 786..786
+N
+\end{verbatim}
+#+end_export
+#+begin_export latex
+The header also shows the interval on the target representative
+returned, 4492--5499. When we check this with \ty{sblast}, we get
+exactly that interval.
+#+end_export
+#+end_export
+#+begin_src sh <<qsSim.sh>>=
+  sblast markers.fasta targets/t2.fasta
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+#qa              sa  qs  qe    ss    se    score
+t2_(4492..5499)  t2  1   1008  4492  5499  1000.0
+\end{verbatim}
+So there is a tiny overlap of 9 bp with homologous material on the 5'
+end and the loss of one bp at the 3' end.
+#+end_export
