@@ -84,7 +84,6 @@ and the expected $7\times 9=63$ kb of neighbor material.
   cres neighbors/*
 #+end_src
 #+begin_export latex
-
 The program \ty{fur} returns the intersection of the elements of the
 difference. To run \ty{fur}, we convert the input data first into a
 \ty{fur} database with the program \ty{makeFurDb}. It singles out a
