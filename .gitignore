@@ -34,3 +34,11 @@ qDat/ncbi_dataset.zip
 qDat/ncbi_dataset/
 qsDat/sortSeq.sh
 qDat/test/
+qsDat/*.zip
+qsDat/all*
+qsDat/fur.db
+qsDat/ndata*
+qsDat/neidb*
+qsDat/neighbors
+qsDat/targets
+qsDat/tdata
