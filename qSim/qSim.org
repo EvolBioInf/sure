@@ -1,14 +1,14 @@
 #+begin_export latex
 \section{Introduction}
 The simplest search for unique regions is within one sequence, or
-within a set of sequences that are effectively regarded as one. In the
-following we search such query sequences for unique regions using the
-two programs \ty{genmap}~\cite{poc20:gen} and
-\ty{macle}~\cite{pir19:hig}. We first explore these programs by
-applying them to simulated sequences to get an intuition about their
-function. Then we show how \ty{genmap} and \ty{macle} can be used to
-explore real sequence data by searching for unique regions in the
-shortest chromosome of the human genome, chromosome 21.
+within a set of sequences that are treated as one. In the following we
+search such query sequences for unique regions using the two programs
+\ty{genmap}~\cite{poc20:gen} and \ty{macle}~\cite{pir19:hig}. We first
+explore these programs by applying them to simulated sequences to get
+an intuition about their function. Then we show how \ty{genmap} and
+\ty{macle} can be used to explore real sequence data by searching for
+unique regions in the shortest chromosome of the human genome,
+chromosome 21.
 
 \section{Simulated Data}
 We begin by simulating the simplest case, single random
@@ -41,13 +41,12 @@ that are matched without errors (\ty{-E}) with output written to
 #+end_src
 #+begin_export latex
 This generates the output file \ty{q\_gm.out.txt}, which contains the
-output in a particular version of the FASTA format, where the header
-is followed by single row of data. The data row contains a mappability
-value for each position in the input sequence, five million
-mappability values in our case. To make this lengthy row of data
-easier to parse, we wrap it into shorter rows with the program
-\ty{wrapSeq}, also from the Biobox, and take a look at the first ten
-rows.
+output in a version of the FASTA format, where the header is followed
+by single row of data. The data row contains a mappability value for
+each position in the input sequence, five million mappability values
+in our case. To make this lengthy row of data easier to parse, we wrap
+it into shorter rows with the program \ty{wrapSeq}, also from the
+Biobox, and take a look at the first ten rows.
 #+end_export
 #+begin_src sh <<qSim.sh>>=
   wrapSeq q_gm.out.txt | head
@@ -101,8 +100,8 @@ unique regions from the output of \ty{genmap}? The answer is, by using
 a sliding window analysis.
 
 The program \ty{sw} (Biobox) implements a sliding window analysis on a
-column of numbers. For some window length, $w$, \ty{sw} reads the $w$
-first numbers, calculates their average, $a$ and prints the pair
+column of numbers. For some window of length, $w$, \ty{sw} reads the
+$w$ first numbers, calculates their average, $a$, and prints the pair
 $(w/2,a)$, that is, the midpoint of the first window and its
 value. Then the window is slid to the right, by default by a tenth of
 the window length, and the procedure is repeated. We run \ty{sw} with
@@ -112,8 +111,8 @@ values are uniformly close to 1.
 \begin{center}
 \includegraphics{../qSim/q_gm2}
 \end{center}
-\caption{Sliding window analysis of mappability with 1 kb windows
-  along 5 Mb of random sequence.}\label{fig:qgm2}
+\caption{The mappability in 1\,kb sliding windows along 5 Mb of random
+  sequence.}\label{fig:qgm2}
 \end{figure}
 #+end_export
 #+begin_src sh <<qSim.sh>>=
@@ -197,10 +196,10 @@ index of our sequence and save it to the file \ty{q\_ma.idx}.
   macle -s q.fasta > q_ma.idx
 #+end_src
 #+begin_export latex
-Figure~\ref{fig:qma1} shows the sliding window analysis of $\cm$, which
-looks similar to the sliding window analysis of the mappability
+Figure~\ref{fig:qma1} shows the sliding window analysis of $\cm$,
+which looks similar to the sliding window analysis of the mappability
 in Figure~\ref{fig:qgm2}, though it is also clear that the $\cm$ is
-centered on 1, while the mappability is bound by 1.
+centered on 1, while the mappability is bounded by 1.
 \begin{figure}
   \begin{center}
     \includegraphics{../qSim/q_ma1}
@@ -318,7 +317,9 @@ is indeed the case, with no mappability values close to 1.
   \begin{center}
     \includegraphics{../qSim/q_gm3}
   \end{center}
-  \caption{}\label{fig:qgm3}
+  \caption{The mappability in 1\,kb sliding windows along 5\,Mb of
+    random sequence on the background of a homologous sequence
+    diverged by 1\,\%.}\label{fig:qgm3}
 \end{figure}
 #+end_export
 #+begin_src sh <<qSim.sh>>=
@@ -326,12 +327,13 @@ is indeed the case, with no mappability values close to 1.
       plotLine -x "Position (Mb)" -y Mappability -Y "0:1.1"
 #+end_src    
 #+begin_export latex
-We shouldn't pick any unique regions from \ty{q3.fasta}, but let's
-check this ``negative control'' works. Since the sequence we analyze
-has doubled in length, we need a new mappability threshold. We
-calculate this from a shuffled, or randomized, version of
-\ty{q3.fasta}. This is generated with the program \ty{randomizeSeq}
-(Biobox). We save the randomized sequence in \ty{q3r.fasta}.
+We shouldn't pick any unique regions from the pair of homologous
+sequences in \ty{q3.fasta}, but let's make sure this ``negative
+control'' actually works. Since the sequence we analyze has doubled in
+length, we need a new mappability threshold. We calculate this from a
+shuffled, or randomized, version of \ty{q3.fasta}. This is generated
+with the program \ty{randomizeSeq} (Biobox). We save the randomized
+sequence in \ty{q3r.fasta}.
 #+end_export
 #+begin_src sh <<qSim.sh>>=
   randomizeSeq q3.fasta > q3r.fasta
@@ -370,20 +372,21 @@ We calculate the \ty{macle} index of our new query.
   macle -s q3.fasta > q3_ma.idx
 #+end_src
 #+begin_export latex
-A sliding window plot of $\cm$ shows strongly fluctuating values
-around a mean of 0.2 (Figure~\ref{fig:qma2}). However, none of the
-values are close to 1.
+Figure~\ref{fig:qma2} shows q sliding window plot of $\cm$ along the
+first 5\,Mb of the sequence. The values fluctuate around a mean of
+0.2. However, none of them is close to 1.
 \begin{figure}
   \begin{center}
     \includegraphics{../qSim/q3_ma}
   \end{center}
-  \caption{Sliding window analysis of $\cm$ in 1 kb windows along a random sequence
-    on the background of its 1\% diverged homolog.}\label{fig:qma2}
+  \caption{The match complexity, $\cm$, in 1\,kb sliding windows along
+    a random 5\,Mb sequence on the background of its 1\,\% diverged
+    homolog.}\label{fig:qma2}
 \end{figure}
 #+end_export
 #+begin_src sh <<qSim.sh>>=
   macle -w 1000 q3_ma.idx |
-      awk '{print $2/1000000, $3}' |
+      awk '$2<=5000000{print $2/1000000, $3}' |
       plotLine -Y "0:1" -x "Position (Mb)" -y C_m
 #+end_src
 #+begin_export latex
@@ -438,9 +441,9 @@ the spike to approximately 1.
   \begin{center}
     \includegraphics{../qSim/q_gm4}
   \end{center}
-  \caption{Sliding window analysis of mappability along a random 5 Mb
+  \caption{The mappability in 1\,kb sliding windows along a random 5\,Mb
     sequence on the background of a sequence diverged by 1\%; the
-    background sequence also has a 2 kb deletion at its center which
+    background sequence also has a 2\,kb deletion at its center which
     shows up as the peak in the middle. }\label{fig:qgm4}
 \end{figure}
 #+end_export
@@ -474,10 +477,10 @@ central peak of $\cm=1$, indicating the unique region we just created.
   \begin{center}
     \includegraphics{../qSim/q4_ma}
   \end{center}
-  \caption{Sliding window analysis of $\cm$ along a random 5 Mb
-    sequence on the background of a sequence diverged by 1\%; the
-    background sequence also has a 2 kb deletion at its center which
-    shows up as the peak in the middle.}\label{fig:qma3}
+  \caption{The match complexity, $\cm$, in 1\,kb sliding windows along
+    a random 5\,Mb sequence on the background of a sequence diverged
+    by 1\,\%; the background sequence also has a 2\,kb deletion at its
+    center which shows up as the peak in the middle.}\label{fig:qma3}
 \end{figure}
 #+end_export
 #+begin_src sh <<qSim.sh>>=

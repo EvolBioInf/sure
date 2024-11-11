@@ -2,16 +2,15 @@
 \section{Real Data}
 We have seen how to simulate samples of target and neighbor sequences
 with \ty{stan}. Given such data, we can use \ty{fur} to extract the
-intersection of the difference. This gives us confidence to now turn
-to real data.
+markers. This gives us confidence to now turn to real data.
 
 As an example of real data we picked the bacterium \emph{Legionella
 pneumophila}, which causes legionaires' disease in humans, a form of
 pneumonia. Apart from its medical importance, we picked
 \emph{L. pneumophila} as our example species for its suitable sample
-size---not too large, not too small---and the appearance of a common
-problem in target/neighbor analyses, the incongruence between taxonomy
-and phylogeny.
+size---neither too large, nor too small---and the appearance of a
+common problem in target/neighbor analyses, the incongruence between
+taxonomy and phylogeny.
 \subsection*{Download Genomes}
 We find the genomes available for \emph{L. pneumoniae} and its close
 relatives using programs from the Neighbors
@@ -130,7 +129,7 @@ neighbors.
   grep -c '^n' acc.txt
 #+end_src
 #+begin_export latex
-To download the targets an neighbors, we separate their accessions and
+To download the targets and neighbors, we separate their accessions and
 store them in the files \ty{tacc.txt} and \ty{nacc.txt}.
 #+end_export
 #+begin_src sh <<qsDat.sh>>=
@@ -185,7 +184,7 @@ for that, we move all target and neighbor genomes to the directory
 #+begin_export latex
 We have 21 targets and 21 neighbors. That's quite a reduction from the
 49 target accessions and 103 neighbor accessions we started off
-with. Apparently many of them were not assembled to level
+with. Apparently most of them were not assembled to level
 ``complete''.
 #+end_export
 #+begin_src sh <<qsDat.sh>>=
@@ -271,11 +270,11 @@ to get the neighbors.
 #+begin_export latex
 \subsection*{Find Markers}
 We now turn to determining the regions that appear in all targets but
-are absent from the neighbors, we call them markers. The program for
-finding them, \ty{fur}, works on a database that is computed with
-\ty{makeFurDb}. In single-threaded mode this takes 18 s and 488 Mb of
-RAM. In default multi-threaded mode the run time drops to 13 s and the
-memory requirement grows to 3.3 GB.
+are absent from the neighbors, the candidate markers. To find them, we
+first compute the \ty{fur} database with \ty{makeFurDb}. In
+single-threaded mode this takes 18\,s and 488\,Mb of RAM. In default
+multi-threaded mode the run time drops to 13\,s and the memory
+requirement grows to 3.3\,GB.
 #+end_export
 #+begin_src sh <<qsDat.sh>>=
   makeFurDb -t targets/ -n neighbors/ -d fur.db

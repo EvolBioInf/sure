@@ -1,18 +1,18 @@
 #+begin_export latex
 \section{Introduction}
-Apart from searching for unique regions within a query sequence with
-respect to that same query sequence, we can search for unique regions
-present in all queries sequences with respect to one or more subject
-sequences. Given a sample of query and subject sequences, we can
-search for all query regions that are absent from the subjects, the
-\emph{difference} between query and subject. An example of this
-approach is implemented in the program
+In Chapter~\ref{ch:q} we searched for unique regions within a query
+sequence with respect to that same query sequence. In the current
+Chapter, we search for unique regions present in queries sequences
+with respect to one or more subject sequences. Given a sample of query
+and subject sequences, we can search for all query regions that are
+absent from the subjects, but present in all queries. An example of
+this approach is implemented in the program
 \ty{fur}~\cite{hau21:fur,vie24:mar}. If the subject sequences are the
 closest distinct relatives of the query, the ubiquitous query regions
-returned by \ty{fur} are ideal starting material for developing
-diagnostic markers~\cite{san20:rec,vie24:mar}.
+returned by \ty{fur} are highly enriched for diagnostic
+markers~\cite{san20:rec,vie24:mar}.
 
-To get an intuition for \ty{fur}, we first apply them to simulated
+To get an intuition for \ty{fur}, we first apply it to simulated
 data. This is generated with the program
 \ty{stan}\footnote{\ty{github.com/evolbioinf/stan}}, which simulates
 markers in samples of target and neighbor sequences, as the name
@@ -21,20 +21,19 @@ suggests.
 Then we apply \ty{fur} to real genome sequences sampled from
 \emph{Legionella pneumophila} and its neighbors. \emph{L. pneumophila}
 causes legionnaires' disease, a type of pneumonia, and typically
-spreads via water systems.
+spreads via water supply systems.
 
 
 \section{Simulated Data}
 The program \ty{stan} simulates separate genealogies, or
 \emph{coalescents}, for two samples of organisms, targets and
-neighbors---or \emph{queries} and \emph{subjects} in the parlance of
-our review---and then joins the two genealogies into the final
-coalescent. Figure~\ref{fig:coa} shows an example coalescent for 5
-targets and 7 neighbors generated with \ty{stan} and plotted with
-\ty{plotTree} (Biobox). Apart form the coalescent option, \ty{-c}, we
-also seed the random number generator of \ty{stan} with \ty{-s} to
-ensure we are all looking at the same data. If you'd like more
-variety, just leave of the \ty{-s} option.
+neighbors---or \emph{queries} and \emph{subjects}---and then joins the
+two genealogies into the final coalescent. Figure~\ref{fig:coa} shows
+an example coalescent for 5 targets and 7 neighbors generated with
+\ty{stan} and plotted with \ty{plotTree} (Biobox). Apart form the
+coalescent option, \ty{-c}, we also seed the random number generator
+of \ty{stan} with \ty{-s} to ensure we are all looking at the same
+data. If you'd like more variety, just leave out the \ty{-s} option.
 \begin{figure}
   \input{../qsSim/coaNames}
   \begin{center}
@@ -52,7 +51,7 @@ variety, just leave of the \ty{-s} option.
 Once \ty{stan} has constructed the coalescent, it simulates 10 kb DNA
 sequences along it and deletes the central 1 kb region, interval
 4501--5500, from all neighbors, the \emph{marker} to be discovered in
-the targets. The target sequences are written the directory
+the targets. The target sequences are written to the directory
 \ty{targets}, the neighbors to the directory \ty{neighbors}.  We can
 list the five target sequences,
 #+end_export
@@ -72,7 +71,7 @@ and the seven neighbor sequences.
 \begin{verbatim}
 n1.fasta n2.fasta n3.fasta n4.fasta n5.fasta n6.fasta n7.fasta
 \end{verbatim}
-We can also count the expected 50 kb of target material,
+We can also count the expected $5\times 10=50$\,kb of target material,
 #+end_export
 #+begin_src sh <<qsSim.sh>>=
   cres targets/*
@@ -84,13 +83,12 @@ and the expected $7\times 9=63$ kb of neighbor material.
   cres neighbors/*
 #+end_src
 #+begin_export latex
-The program \ty{fur} returns the intersection of the elements of the
-difference. To run \ty{fur}, we convert the input data first into a
-\ty{fur} database with the program \ty{makeFurDb}. It singles out a
-target representative, by default the shortest sequence. If the
-targets are all of the same length, as in our example, the program
-picks a random one of them, \ty{t2.fasta} in our case. The program
-\ty{makeFurDb} also calculates a Blast database.
+To run \ty{fur}, we convert the input data first into a \ty{fur}
+database with the program \ty{makeFurDb}. It singles out a target
+representative, by default the shortest sequence. If the targets are
+all of the same length, as in our example, the program picks a random
+one of them, \ty{t2.fasta} in our case. The program \ty{makeFurDb}
+also calculates a Blast database.
 #+end_export
 #+begin_src sh <<qsSim.sh>>=
   makeFurDb -t targets -n neighbors -d fur.db
@@ -100,11 +98,10 @@ picks a random one of them, \ty{t2.fasta} in our case. The program
 using t2.fasta as target representative
 making Blast database
 \end{verbatim}
-We run the program \ty{fur} to find differences between the target and
-the neighbor sequences. The difference consists of all target regions
-that are absent from the neighbors and present in all targets. We look
-for regions of at least 100 bp length. We find 1008 bp of ubiquitous
-unique material and save the output in the file \ty{markers.fasta}.
+We run the program \ty{fur} to find all target regions that are absent
+from the neighbors and present in all targets. We look for regions of
+at least 100\,bp length. We find 1008\,bp of such marker material and
+save the output in the file \ty{markers.fasta}.
 #+end_export
 #+begin_src sh <<qsSim.sh>>=
   fur -d fur.db/ > markers.fasta
@@ -120,10 +117,8 @@ unique material and save the output in the file \ty{markers.fasta}.
 
 The output table of \ty{fur} shows in the last column that the
 sequence contains 3 unknown nucleotides, \ty{N}s, where there is a
-polymorphism in the intersection of the difference.
-
-The header of \ty{markers.fasta} shows that the two \ty{N}s are
-located at positions 247 and 786.
+polymorphism in the result. The header of \ty{markers.fasta} shows
+that the two \ty{N}s are located at positions 247 and 786.
 #+end_export
 #+begin_src sh <<qsSim.sh>>=
   head -n 1 markers.fasta

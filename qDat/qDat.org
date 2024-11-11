@@ -1,9 +1,9 @@
 #+begin_export latex
 \section{Real Data}
-Next we do real genomics by detecting unique regions in real data. Our
-example data set is the smallest human chromosome, chromosome 21. We
-download the reference assembly of the human genome and its
-annotations in ``dehydrated'' form.
+Next we do some real genomics by detecting unique regions in real
+data. Our example data set is the smallest human chromosome,
+chromosome 21. We download the reference assembly of the human genome
+and its annotations in ``dehydrated'' form.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
   datasets download genome accession GCF_000001405.40 \
@@ -65,9 +65,8 @@ c       2936147 0.0629
 g       2981169 0.0638
 t       4866512 0.104
 \end{verbatim}
-The lower case residue designations indicate repeats, while \ty{N}
-indicates an unknown nucleotide. 14.2\% of chromosome 21 are still
-unknown.
+The residues in lower case indicate repeats, while \ty{N} indicates an
+unknown nucleotide. 14.2\% of chromosome 21 are still unknown.
 #+end_export
 #+begin_export latex
 We calculate the \ty{genmap} index of chromosome 21. This takes 56 s
@@ -114,11 +113,11 @@ Then we index the randomized sequence and calculate its mappability.
   genmap map -I chr21r_gm.idx/ -K 15 -E 0 -O chr21r_gm.out -t 
 #+end_src
 #+begin_export latex
-We carry out the sliding window analysis and pick the 5\% quantile of
-mappability values. Given that there are $46.7\times 10^6$ mappability
-values, the 5\% quantile is entry number
+We carry out the sliding window analysis of the mappability values and
+pick their 5\,\% quantile. Given that there are $46.7\times 10^6$
+mappability values, the 5\% quantile is entry number
 \[
-46.7\times 10^6/100*5\approx 2,335,000.
+46.7\times 10^6/100\times 5\approx 2,335,000.
 \]
 This turns out to be 0.9273.
 #+end_export
@@ -194,20 +193,11 @@ from the annotation file.
 #+begin_export latex
 This gives two long non-coding RNAs at 36,632,681--36,698,991
 (accession LOC105369308) and 36,700,516-36,709,131 (LOC107985492), and
-the gene encoding the transcription factor SIM2 located at
-36,699,115--36,749,917. ``SIM2'' stands for ``single-minded 2'' and
-was originally named for the morphological effect of its knockout on
-the midline neuroepithelium of fruit flies, where two strands of
-neurological tissue merge into one~\cite{tho88:mol}. SIM2 is a
-transcription factor based on the helix-loop-helix motif and mouse
-knock-outs are associated with severe morphological and neurological
-abnormalities~\cite{but22:cha}. In humans, the gene is located in the
-Down chromosomal region on chromosome 21~\cite{dah95:dow}, which is
-critical for the development of Down syndrome. And while the exact
-molecular details of SIM2 action during development and beyond remain
-unclear, it is known that patients with intellectual disabilities have
-numerous amino acid changes in SIM2 that \emph{in vitro} impair its
-function as a transcription factor~\cite{but22:cha}.
+the gene encoding the transcription factor SIM2 located on the forward
+strand at 36,699,115--36,749,917. SIM2 is a master regulator of
+neuronal development and is located in the chromosomal region on
+chromosome 21 critical for the development of Down
+syndrome~\cite{dah95:dow, but22:cha}.
 
 So let's plot $\cm$ and the mappability in the 200 kb surrounding our
 unique region, 36,588,001--36,814,000. We first extract the $\cm$
@@ -234,11 +224,11 @@ unique region, ``u'', and the coordinates of the SIM2 gene.
   echo "36.749917 0.1 s" >> chr21.dat
 #+end_src
 #+begin_export latex
-Figure~\ref{fig:chr21} shows the plot of our region. The mappability
+Figure~\ref{fig:chr21} shows a slightly edited plot of our region. The mappability
 and $\cm$ are closely correlated, though the $\cm$ has the advantage
 that we can set a threshold that allows us to pick unique regions.
 
-For \ty{genmap} threshold computation evidently still needs to be
+For \ty{genmap}, threshold computation evidently still needs to be
 developed. If we lowered the mappability threshold from 0.9273 to
 0.92, the longest interval we'd pick would be 16 kb in the region
 36,692,001--36,708,000, also intersecting the SIM gene (not shown).
@@ -247,10 +237,10 @@ developed. If we lowered the mappability threshold from 0.9273 to
     \includegraphics[width=0.8\textwidth]{../qDat/chr21_clean}
   \end{center}
   \caption{Two measures of uniqueness along a portion of human
-    chromosome 21, $\cm$ (\emph{c}) and the mappbaility (\emph{m});
-    shown are also the $\cm$ threshold (\emph{tc}), the mappability
-    threshold (\emph{tm}), the unique region picked based on this threshold
-    (\emph{u}), and the SIM2 gene that intersects this region (\emph{s}).}\label{fig:chr21}
+    chromosome 21, \emph{Complexity} ($\cm$) and the
+    \emph{Mappbaility}; the dashed lines show the respective
+    thresholds; the promoter and 5' region of the SIM2 \emph{Gene} is
+    intersected by the \emph{Unique region}.}\label{fig:chr21}
 \end{figure}
 #+end_export
 #+begin_src sh <<qDat.sh>>=

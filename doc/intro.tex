@@ -1,22 +1,31 @@
 Searching for similar sequences is a bioinformatics staple, if not its
 actual raison d'\^etre. This is shown by the popularity of programs
 for similarity search, above all Blast~\cite{alt90:bas,alt97:gap}, but
-also that of a host of similar programs for quickly calculating
-pairwise local alignments like Blat~\cite{ken02:bla} and
+also the wide-spread use of a host of similar programs for quickly
+calculating pairwise local alignments like Blat~\cite{ken02:bla} and
 BlastZ~\cite{sch03:hum}. Given this battery of well-established tools,
 the problem of finding \emph{dissimilar}, or unique, regions might
-seem solved.---Just carry out a similarity search and take its
+seem solved---just carry out a similarity search and take its
 complement. In practice, however, there are only few tools available
 that allow convenient detection of unique regions in large genomes
-like those of mammals, or from large samples of bacerial genomes. And
+like those of mammals, or in large samples of bacerial genomes. And
 none of these tools is as established as one of the popular aligners.
 
-In this repository we survey three published tools for finding unique
+This repository accompanies a forthcoming review on searching for
+unique regions in genome sequences~\cite{vie25:fas}. We survey three
+published tools for finding unique
 regions, \ty{genmap}~\cite{poc20:gen}, \ty{macle}~\cite{pir19:hig}
 and \ty{fur}~\cite{hau21:fur,vie24:mar}, by applying them so simulated
-and real data. This repository accompanies a forthcoming review on
-searching for unique regions in genome sequences~\cite{vie25:fas}.
+and real data. We first analyze single query sequences before
+comparing pairs of query and subject sequences. The query/subject
+nomenclature is well known from Blast and similar programs. However,
+it turns out that when searching for unique regions, the most
+interesting combination of query/subject sequences are subjects that
+are the closest distinct relatives of the queries. To emphasize this,
+we have called the queries ``targets'' and the subjects ``neighbors''
+in the review and later in this document.
 
-We occasionally mention data on resource consumption, which refer to
-runs under Ubuntu 24.04 on WSL for Windows11 on a consumer-grade
-laptop with 16 12th Gen Intel i7-1260P CPUs and 32 GB of RAM.
+As a last preliminary, we occasionally mention data on resource
+consumption, which refer to runs under Ubuntu 24.04 on WSL for
+Windows11 on a consumer-grade laptop with 16 12th Gen Intel i7-1260P
+CPUs and 32 GB of RAM.
