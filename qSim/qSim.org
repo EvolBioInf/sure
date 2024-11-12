@@ -259,6 +259,9 @@ this is 99.7\%, very close.
   echo '4987400/5000000 * 100' | bc -l
 #+end_src
 #+begin_export latex
+\begin{verbatim}
+99.74800000000000000000
+\end{verbatim}
 \subsection*{Unique Regions in Homologous Background}
 Unique regions are usually picked on a non-unique, that is homologous,
 background. To simulate a homologous background, we first generate a
@@ -360,7 +363,7 @@ entry in the null distribution of mappability values, 0.986.
 #+end_src
 #+begin_export latex
 The search for unique regions with this threshold finds nothing, as
-expected.
+expected, since the two sequences have only diverged by 1\%.
 #+end_export
 #+begin_src sh <<qSim.sh>>=
   merwin -t 0.986 q3.map
