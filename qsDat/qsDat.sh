@@ -55,23 +55,7 @@ land all.nwk |
     while read a; do
           ln -s $(pwd)/all/$a $(pwd)/neighbors/$a
     done
-kec e -t targets/ -n neighbors/ --min 100 -k 15 -o diff.fasta
-bash sortSeq.sh diff.fasta > tmp
-mv tmp diff.fasta
-head diff.fasta
-head -n 3 diff.fasta > diff1.fasta
-sblast diff1.fasta targets/*.fna |
-    tail -n +2 |
-    awk '{print $2}' |
-    sort |
-    uniq |
-    wc -l
-sblast diff1.fasta neighbors/*.fna  |
-    tail -n +2 |
-    awk '{print $2}' |
-    sort |
-    uniq |
-    wc -l
+
 makeFurDb -t targets/ -n neighbors/ -d fur.db
 fur -d fur.db > markers.fasta
 head -n 3 markers.fasta > markers1.fasta

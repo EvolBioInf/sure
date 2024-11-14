@@ -48,8 +48,8 @@ data. If you'd like more variety, just leave out the \ty{-s} option.
       plotTree
 #+end_src
 #+begin_export latex
-Once \ty{stan} has constructed the coalescent, it simulates 10 kb DNA
-sequences along it and deletes the central 1 kb region, interval
+Once \ty{stan} has constructed the coalescent, it simulates 10\,kb DNA
+sequences along it and deletes the central 1\,kb region, interval
 4501--5500, from all neighbors, the \emph{marker} to be discovered in
 the targets. The target sequences are written to the directory
 \ty{targets}, the neighbors to the directory \ty{neighbors}.  We can
@@ -77,7 +77,7 @@ We can also count the expected $5\times 10=50$\,kb of target material,
   cres targets/*
 #+end_src
 #+begin_export latex
-and the expected $7\times 9=63$ kb of neighbor material.
+and the expected $7\times 9=63$\,kb of neighbor material.
 #+end_export
 #+begin_src sh <<qsSim.sh>>=
   cres neighbors/*
@@ -148,7 +148,7 @@ get two \ty{N}s, as expected.
 #+end_export
 #+begin_src sh <<qsSim.sh>>=
   head -n 1 markers.fasta |
-      awk -f scripts/cut.awk
+      awk -f cut.awk
 #+end_src
 #+begin_export latex
 \begin{verbatim}
@@ -172,6 +172,7 @@ exactly that interval.
 #qa              sa  qs  qe    ss    se    score
 t2_(4492..5499)  t2  1   1008  4492  5499  1000.0
 \end{verbatim}
-So there is a tiny overlap of 9 bp with homologous material on the 5'
-end and the loss of one bp at the 3' end.
+Recall that the true marker covers the interval 4501--5500. So our
+result of 4492--5499 has a tiny overlap of 9\,bp with homologous
+material on the marker's 5' end, and the loss of 1\,bp at its 3' end.
 #+end_export

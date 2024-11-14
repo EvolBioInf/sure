@@ -18,7 +18,7 @@ unique regions from a non-unique background.
 \subsection*{Only Unique Regions}
 We use the program \ty{ranseq} from the Biobox
 package\footnote{\ty{github.com/evolbioinf/biobox}} to simulate a
-random sequence the length of the \emph{E. coli} genome, 5 Mb, and
+random sequence the length of the \emph{E. coli} genome, 5\,Mb, and
 save it in the file \ty{q.fasta}.
 #+end_export
 #+begin_src sh <<qSim.sh>>=
@@ -69,7 +69,7 @@ Biobox, and take a look at the first ten rows.
 
 Remember, our input sequence is random, so your result is bound to
 look slightly different. It should, however, also be dominated by
-``1''s, indicating that almost all 15-mers in a random 5 Mb sequence are
+``1''s, indicating that almost all 15-mers in a random 5\,Mb sequence are
 unique.
 
 To plot the mappabilities along the sequence, we write them as pairs
@@ -91,7 +91,7 @@ that are repeated once, twice, or three times.
   \begin{center}
     \includegraphics{../qSim/q_gm1.ps}
   \end{center}
-  \caption{Mappability along 5 Mb of random sequence.}\label{fig:qgm1}
+  \caption{Mappability along 5\,Mb of random sequence.}\label{fig:qgm1}
 \end{figure}
 
 Clearly, in a random sequence everything is unique. But if we didn't
@@ -111,7 +111,7 @@ values are uniformly close to 1.
 \begin{center}
 \includegraphics{../qSim/q_gm2}
 \end{center}
-\caption{The mappability in 1\,kb sliding windows along 5 Mb of random
+\caption{The mappability in 1\,kb sliding windows along 5\,Mb of random
   sequence.}\label{fig:qgm2}
 \end{figure}
 #+end_export
@@ -128,7 +128,7 @@ or repeat. We do this using a threshold mappability, $t_{\rm m}$; if
 the mappability of a window is greater or equal to $t_{\rm m}$, it is
 deemed unique. To estimate this threshold, we realize that the values
 from our windows analysis of a random sequence constitute the relevant
-null distribution. So we cut off the lowest 5\% of the windowed
+null distribution. Sowe  cut off the lowest 5\% of the windowed
 mappability values. Since the windows advance by $1000/10=100$ steps,
 there are roughly $5\times 10^6/100=5\times 10^4$ windows, of which
 5\% are 2500. So we sort the values and look up the 2500-th entry in
@@ -175,7 +175,7 @@ bp.
       awk '{l=$3-$2+1;s+=l}END{print s}'
 #+end_src
 #+begin_export latex
-The 4,990,800 bp we found, are 99.8\% of the 5 Mb we should have
+The 4,990,800\,bp we found, are 99.8\% of the 5\,Mb we should have
 found---not bad for a classifier.
 #+end_export
 #+begin_src sh <<qSim.sh>>=
@@ -204,8 +204,8 @@ centered on 1, while the mappability is bounded by 1.
   \begin{center}
     \includegraphics{../qSim/q_ma1}
   \end{center}
-  \caption{Sliding window analysis of $\cm$ with 1 kb windows along a
-    random 5 Mb sequence.}\label{fig:qma1}
+  \caption{Sliding window analysis of $\cm$ with 1\,kb windows along a
+    random 5\,Mb sequence.}\label{fig:qma1}
 \end{figure}
 #+end_export
 #+begin_src sh <<qSim.sh>>=
@@ -243,7 +243,7 @@ Rand1   136501  217900  1.002
 #+end_export
 #+begin_export latex
 We now sum the lengths of the regions classified as unique, 4,987,400
-bp in our case, roughly 4.99 Mb.
+bp in our case, roughly 4.99\,Mb.
 #+end_export
 #+begin_src sh <<qSim.sh>>=
   macle -w 1000 q_ma.idx |
@@ -252,7 +252,7 @@ bp in our case, roughly 4.99 Mb.
 #+end_src
 #+begin_export latex
 We end our exploration of single random sequences, by calculating the
-percentage of what we should have found, the full 5 Mb. In our case
+percentage of what we should have found, the full 5\,Mb. In our case
 this is 99.7\%, very close.
 #+end_export
 #+begin_src sh <<qSim.sh>>=
@@ -291,7 +291,7 @@ We calculate the \ty{genmap} index and the mappability values.
 #+end_src
 #+begin_export latex
 We carry out the sliding window analysis of the mappability and plot
-it along the first 5 Mb, our original sequence. We save the results in
+it along the first 5\,Mb, our original sequence. We save the results in
 \ty{q3.map}.
 #+end_export
 #+begin_src sh <<qSim.sh>>=
@@ -356,7 +356,7 @@ entry in the null distribution of mappability values, 0.986.
   grep -v '^>' q3r_gm.out.txt |
       tr ' ' '\n' |
       sw -w 1000 |
-      cut -f 3 q3r.map |
+      cut -f 3 |
       sort -n |
       head -n 5000 |
       tail -n 1
@@ -409,9 +409,10 @@ Then we search for unique regions and find none, as expected.
       merwin -t 0.9855 -w 1000
 #+end_src
 #+begin_export latex
+\section*{A Marker on Homologous Background}
 In order to generate a discrete unique region on a homologous
 background, we produce a fourth query using the original sequence and
-its homolog, from which we excise 2 kb right in the middle using the
+its homolog, from which we excise 2\,kb right in the middle using the
 program \ty{cutSeq} (Biobox).
 #+end_export
 #+begin_src sh <<qSim.sh>>=
@@ -457,7 +458,7 @@ the spike to approximately 1.
 #+begin_export latex
 It is easy to see the peak in Figure~\ref{fig:qgm4}. With the same
 ease we can use \ty{merwin} and our mappability threshold of 0.986 to
-pick precisely the 2 kb we should be picking.
+pick precisely the 2\,kb we should be picking.
 #+end_export
 #+begin_src sh <<qSim.sh>>=
   merwin -w 1000 -t 0.986 q4.map
@@ -492,7 +493,7 @@ central peak of $\cm=1$, indicating the unique region we just created.
       plotLine -x "Position (Mb)" -y "C_m"
 #+end_src
 #+begin_export latex
-The big question is, can we now pick the unique 2 kb? It turns out we
+The big question is, can we now pick the unique 2\,kb? It turns out we
 can again do so with great accuracy.
 #+end_export
 #+begin_src sh <<qSim.sh>>=

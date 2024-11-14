@@ -11,8 +11,9 @@ and its annotations in ``dehydrated'' form.
 	   --dehydrated
 #+end_src
 #+begin_export latex
-We unzip the data set and rehydrate it. Since we are downloading 4.6
-GB of data, this can take a while, a bit over two minutes in our case.
+We unzip the data set and rehydrate it. Since we are downloading
+4.6\,GB of data, this can take a while, a bit over two minutes in our
+case.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
   unzip ncbi_dataset.zip
@@ -43,7 +44,7 @@ save it to the file \ty{chr21.fna}.
   getSeq NC_000021.9 hs.fna > chr21.fna
 #+end_src
 #+begin_export latex
-We count the 46.7 Mb of chromosome 21 using the program \ty{cres}
+We count the 46.7\,Mb of chromosome 21 using the program \ty{cres}
 (Biobox).
 #+end_export
 #+begin_src sh <<qDat.sh>>=
@@ -69,21 +70,21 @@ The residues in lower case indicate repeats, while \ty{N} indicates an
 unknown nucleotide. 14.2\% of chromosome 21 are still unknown.
 #+end_export
 #+begin_export latex
-We calculate the \ty{genmap} index of chromosome 21. This takes 56 s
-and 1.4 GB of RAM.
+We calculate the \ty{genmap} index of chromosome 21. This takes 56\,s
+and 1.4\,GB of RAM.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
   genmap index -F chr21.fna -I chr21_gm.idx
 #+end_src
 #+begin_export latex
-Then we calculate the mappability as before, which takes 20 s and uses
-0.3 GB of RAM.
+Then we calculate the mappability as before, which takes 20\,s and uses
+0.3\,GB of RAM.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
   genmap map -I chr21_gm.idx/ -K 15 -E 0 -O chr21_gm.out -t 
 #+end_src
 #+begin_export latex
-We carry out the sliding window analysis of chromosome 21 with 10 kb
+We carry out the sliding window analysis of chromosome 21 with 10\,kb
 windows, and save the values.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
@@ -140,14 +141,14 @@ none.
 #+begin_export latex
 Having calculated the mappability with \ty{genmap}, we next calculate
 the match complexity with \ty{macle}. We begin by indexing the
-sequence, which takes 18 s and 3.1 GB of RAM.
+sequence, which takes 18\,s and 3.1\,GB of RAM.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
   macle -s chr21.fna > chr21_ma.idx
 #+end_src
 #+begin_export latex
 From the \ty{macle} index we extract the match complexity values in 10
-kb windows, which takes less than a second and 0.4 GB RAM.
+kb windows, which takes less than a second and 0.4\,GB RAM.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
   macle -w 10000 chr21_ma.idx > chr21.cm
@@ -199,7 +200,7 @@ neuronal development and is located in the chromosomal region on
 chromosome 21 critical for the development of Down
 syndrome~\cite{dah95:dow, but22:cha}.
 
-So let's plot $\cm$ and the mappability in the 200 kb surrounding our
+So let's plot $\cm$ and the mappability in the 200\,kb surrounding our
 unique region, 36,588,001--36,814,000. We first extract the $\cm$
 values and label them ``c'', then the mappbability labeled ``m''.
 #+end_export
@@ -230,7 +231,7 @@ that we can set a threshold that allows us to pick unique regions.
 
 For \ty{genmap}, threshold computation evidently still needs to be
 developed. If we lowered the mappability threshold from 0.9273 to
-0.92, the longest interval we'd pick would be 16 kb in the region
+0.92, the longest interval we'd pick would be 16\,kb in the region
 36,692,001--36,708,000, also intersecting the SIM gene (not shown).
 \begin{figure}
   \begin{center}

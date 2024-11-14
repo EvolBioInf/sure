@@ -59,14 +59,14 @@ genmap map -I q3r_gm.idx -K 15 -E 0 -O q3r_gm.out -t
 grep -v '^>' q3r_gm.out.txt |
     tr ' ' '\n' |
     sw -w 1000 |
-    cut -f 3 q3r.map |
+    cut -f 3 |
     sort -n |
     head -n 5000 |
     tail -n 1
 merwin -t 0.986 q3.map
 macle -s q3.fasta > q3_ma.idx
 macle -w 1000 q3_ma.idx |
-    awk '{print $2/1000000, $3}' |
+    awk '$2<=5000000{print $2/1000000, $3}' |
     plotLine -Y "0:1" -x "Position (Mb)" -y C_m
 mantile -l 10000000 -w 1000 -g 0.5 -p 0.05
 macle -w 1000 q3_ma.idx |
