@@ -1,4 +1,5 @@
-# [`sure`](https://owncloud.gwdg.de/index.php/s/pYr9qJVjUKSpxvI): Search for Unique Markers
+# [`sure`](https://owncloud.gwdg.de/index.php/s/pYr9qJVjUKSpxvI):
+Search for Unique Regions
 ## Authors
 Beatriz Vieira Mourato and Bernhard Haubold
 
