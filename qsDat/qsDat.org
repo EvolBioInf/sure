@@ -24,7 +24,7 @@ download a compressed verion of the pre-built database and save it to
 the name \ty{neidb\_08\_oct\_24.bz2}.
 #+end_export
 #+begin_src sh <<qsDat.sh>>=
-  url="owncloud.gwdg.de/index.php/s/ppwwPU5zppLkV2q/download"
+  url="owncloud.gwdg.de/index.php/s/oN2RXExwahRPWgg/download"
   wget "https://${url}" -O neidb_08_oct_24.bz2
 #+end_src
 #+begin_export latex

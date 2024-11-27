@@ -1,4 +1,4 @@
-url="owncloud.gwdg.de/index.php/s/ppwwPU5zppLkV2q/download"
+url="owncloud.gwdg.de/index.php/s/oN2RXExwahRPWgg/download"
 wget "https://${url}" -O neidb_08_oct_24.bz2
 bunzip2 neidb_08_oct_24.bz2
 name="Legionella pneumophila subsp. pneumophila"
