@@ -1,6 +1,5 @@
 */*.fasta
 */*.idx
-*/*.sh
 */*.txt
 data/
 doc/date.txt
