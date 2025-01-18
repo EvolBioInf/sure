@@ -116,7 +116,7 @@ Then we index the randomized sequence and calculate its mappability.
 #+end_src
 #+begin_export latex
 We carry out the sliding window analysis of the mappability values and
-pick their 5\,\% quantile. Given that there are 40,079 windows, 5\%
+pick their 5\,\% quantile. Given that there are 40,079 windows, 5\,\%
 quantile is entry number
 \[
 40079/100\times 5\approx 2004.
