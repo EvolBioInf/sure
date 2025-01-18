@@ -98,12 +98,13 @@ threshold like we did for the simulated data. So we need to randomize
 the sequence of chromosome 21. However, we saw that the sequence
 contains many unknown nucleotides, \ty{N}s, so we remove these before
 we randomize the sequence. Removing \ty{N}s creates empty lines, which
-we remove and then re-wrap the sequence before we store it as
-\ty{chr21r.fna}.
+we remove and then re-wrap the sequence before we randomize the
+resulting sequence and store it as \ty{chr21r.fna}.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
   tr -d N < chr21.fna |
       grep -v '^$' |
+      randomizeSeq |
       wrapSeq > chr21r.fna
 #+end_src
 #+begin_export latex
@@ -115,12 +116,12 @@ Then we index the randomized sequence and calculate its mappability.
 #+end_src
 #+begin_export latex
 We carry out the sliding window analysis of the mappability values and
-pick their 5\,\% quantile. Given that there are $46.7\times 10^6$
-mappability values, the 5\% quantile is entry number
+pick their 5\,\% quantile. Given that there are 40,079 windows, 5\%
+quantile is entry number
 \[
-46.7\times 10^6/100\times 5\approx 2,335,000.
+40079/100\times 5\approx 2004.
 \]
-This turns out to be 0.9273.
+This turns out to be 0.9388.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
   tail -n +2 chr21r_gm.out.txt |
@@ -128,7 +129,7 @@ This turns out to be 0.9273.
       sw -w 10000 |
       cut -f 3 |
       sort -n |
-      head -n 2335000 |
+      head -n 2004 |
       tail -n 1
 #+end_src
 #+begin_export latex
@@ -136,7 +137,7 @@ However, if we look for unique regions with this threshold, we find
 none.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
-  merwin -w 10000 -t 0.9273 < chr21.map
+  merwin -w 10000 -t 0.9388 < chr21.map
 #+end_src
 #+begin_export latex
 Having calculated the mappability with \ty{genmap}, we next calculate
@@ -217,8 +218,8 @@ unique region, ``u'', and the coordinates of the SIM2 gene.
 #+begin_src sh <<qDat.sh>>=
   echo "36.588001 0.9951 tc" >> chr21.dat
   echo "36.814000 0.9951 tc" >> chr21.dat
-  echo "36.588001 0.9273 tm" >> chr21.dat
-  echo "36.814000 0.9273 tm" >> chr21.dat
+  echo "36.588001 0.9388 tm" >> chr21.dat
+  echo "36.814000 0.9388 tm" >> chr21.dat
   echo "36.688001 0.2 u"  >> chr21.dat
   echo "36.714000 0.2 u"  >> chr21.dat
   echo "36.699115 0.1 s" >> chr21.dat
@@ -230,16 +231,16 @@ and $\cm$ are closely correlated, though the $\cm$ has the advantage
 that we can set a threshold that allows us to pick unique regions.
 
 For \ty{genmap}, threshold computation evidently still needs to be
-developed. If we lowered the mappability threshold from 0.9273 to
+developed. If we lowered the mappability threshold from 0.9388 to
 0.92, the longest interval we'd pick would be 16\,kb in the region
 36,692,001--36,708,000, also intersecting the SIM gene (not shown).
 \begin{figure}
   \begin{center}
-    \includegraphics[width=0.8\textwidth]{../qDat/chr21_clean}
+    \includegraphics[width=0.8\textwidth]{../qDat/chr21}
   \end{center}
   \caption{Two measures of uniqueness along a portion of human
     chromosome 21, \emph{Complexity} ($\cm$) and the
-    \emph{Mappbaility}; the dashed lines show the respective
+    \emph{Mappability}; the dashed lines show the respective
     thresholds; the promoter and 5' region of the SIM2 \emph{Gene} is
     intersected by the \emph{Unique region}.}\label{fig:chr21}
 \end{figure}
