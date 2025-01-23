@@ -362,11 +362,12 @@ entry in the null distribution of mappability values, 0.986.
       tail -n 1
 #+end_src
 #+begin_export latex
-The search for unique regions with this threshold finds nothing, as
-expected, since the two sequences have only diverged by 1\%.
+The search for unique regions with this threshold in 1\,kb sliding
+windows finds nothing, as expected, since the two sequences have only
+diverged by 1\%.
 #+end_export
 #+begin_src sh <<qSim.sh>>=
-  merwin -t 0.986 q3.map
+  merwin -t 0.986 -w 1000 q3.map
 #+end_src
 #+begin_export latex
 We calculate the \ty{macle} index of our new query.

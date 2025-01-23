@@ -63,7 +63,7 @@ grep -v '^>' q3r_gm.out.txt |
     sort -n |
     head -n 5000 |
     tail -n 1
-merwin -t 0.986 q3.map
+merwin -t 0.986 -w 1000 q3.map
 macle -s q3.fasta > q3_ma.idx
 macle -w 1000 q3_ma.idx |
     awk '$2<=5000000{print $2/1000000, $3}' |
