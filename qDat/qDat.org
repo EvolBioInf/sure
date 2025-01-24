@@ -1,7 +1,7 @@
 #+begin_export latex
 \section{Real Data}
 Next we do some real genomics by detecting unique regions in real
-data. Our example data set is the smallest human chromosome,
+sequences. Our example sequence is the smallest human chromosome,
 chromosome 21. We download the reference assembly of the human genome
 and its annotations in ``dehydrated'' form.
 #+end_export
@@ -26,7 +26,7 @@ names.
 #+begin_src sh <<qDat.sh>>=
   path="ncbi_dataset/data/GCF_000001405.40"
   path="$path/GCF_000001405.40_GRCh38.p14_genomic.fna"
-  mv  $path hs.fna
+  mv $path hs.fna
   mv ncbi_dataset/data/GCF_000001405.40/genomic.gff hs.gff
 #+end_src
 #+begin_export latex
@@ -117,8 +117,8 @@ Then we index the randomized sequence and calculate its mappability.
 #+end_src
 #+begin_export latex
 We carry out the sliding window analysis of the mappability values and
-pick their 5\,\% quantile. Given that there are 40,079 windows, 5\,\%
-quantile is entry number
+pick their 5\,\% quantile. Given that there are 40,079 windows, the
+5\,\% quantile is entry number
 \[
 40079/100\times 5\approx 2004.
 \]
@@ -142,11 +142,13 @@ none.
 #+end_src
 #+begin_export latex
 \subsection*{Mappability with One Mismatch}
-The program \ty{genmap} allows the rapid computation of from matches
-of length $k$ with $e$ errors, the so-called $(k,e)$
+The program \ty{genmap} allows the rapid computation of mappability
+from matches of length $k$ with $e$ errors, the so-called $(k,e)$
 mappability~\cite{poc20:gen}. With $e=0$ we found no unique
-regions. To we investigate what happens with $e=1$, we rerun the
-mapping step, which takes 149\,s and 270\,MB of RAM.
+regions. To investigate what happens with $e=1$, we rerun the mapping
+step, which takes 149\,s and 270\,MB of RAM, approximately seven times
+longer than with zero mismatches, but with the same memory
+requirement.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
   genmap map -I chr21_gm.idx/ -K 15 -E 1 -O chr21_gm_1.out -t
@@ -161,9 +163,9 @@ data.
       sw -w 10000 > chr21_1.map
 #+end_src
 #+begin_export latex
-To pick unique regions, we need to calculate a new threshold for the
-$(15,1)$ data. For this purpose, we rerun the mapping of the index of
-the randomized chromosome 21.
+To pick unique regions, we need to calculate a new uniqueness
+threshold for the $(15,1)$ data. For this purpose, we rerun the
+mapping of the index of the randomized chromosome 21.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
   genmap map -I chr21r_gm.idx/ -K 15 -E 1 -O chr21r_gm_1.out -t
@@ -226,16 +228,17 @@ roughly 4,\% of the 46.7\,Mb of chromosome 21.
 \end{verbatim}
 #+end_export
 #+begin_export latex
-Given that we found no unique regions with $(15,0)$ mappability and a
-2.0\,Mb of candidate unique regions with $(15,1)$ mappability, we
-should check the uniqueness of the regions we just picked.
+Given that we found no unique regions with $(15,0)$ mappability and
+2.0\,Mb with $(15,1)$ mappability, we should check the true uniqueness
+of the regions we just picked.
 
 \subsection*{Assessing Uniqueness}
-To assess the uniqueness of the regions we just picked, we cut them
-from chromosome 21, blast them against chromosome 21, and calculate
-the fraction of hits outside the original query. Ideally, this
-fraction should be zero. We begin by cutting out the 107 regions we
-just picked by running the program \ty{cutSeq} on every region.
+To assess the uniqueness of the 2.0\,Mb picked with $(15, 1)$
+mappbability, we cut them from chromosome 21, blast them against
+chromosome 21, and calculate the fraction of hits outside the original
+query. Ideally, this fraction should be zero. We begin by cutting out
+the 107 regions we just picked by running the program \ty{cutSeq} on
+every region.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
   while read query start end map; do
@@ -284,7 +287,7 @@ chromosome 21.
 #+begin_export latex
 So we give each sequence in \ty{map.fasta} a unique name, $mx$, where
 $x$ are consecutive numbers, $x=1,2,...,107$. We save the renamed
-files to the temporary file \ty{t} and then rename that
+sequences to the temporary file \ty{t} and then rename that
 \ty{map.fasta}.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
@@ -321,11 +324,11 @@ Next we calculate the percent false prediction,
 \[
 f_{\rm p}=\frac{\mbox{false prediction}}{\mbox{total prediction}}\times 100,
 \]
-where the the $\mbox{false prediction}$ the number of bases outside
-the original query, and the $\mbox{total prediction}$ is the length of
-the query in base pairs. This calculation is implemented in the
-program \ty{pf.awk}, which we still need to write. It says $f_{\rm p}$
-is 10.94\,\% for $(15,1)$ mappability.
+where the $\mbox{false prediction}$ is the number of bases outside the
+original query, and the $\mbox{total prediction}$ is the length of the
+query in base pairs. This calculation is implemented in the program
+\ty{pf.awk}, which we still need to write. It says $f_{\rm p}$ is
+10.94\,\% for $(15,1)$ mappability.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
   awk -f ../scripts/fp.awk map.blast
@@ -396,10 +399,11 @@ len:    46709983
 gc:     0.4094
 ...
 \end{verbatim}
-We feed these values to \ty{mantile}, and find a threshold of 0.9951.
+We feed these values to \ty{mantile}, and find the 5\,\% threshold of
+0.9951.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
-  mantile -l 46709983 -g 0.4094 -w 10000 -p 0.05
+  mantile -l 46709983 -g 0.4094 -w 10000 -p 0.025
 #+end_src
 #+begin_export latex
 With this threshold in hand, we extract the unique regions based on
@@ -468,13 +472,140 @@ Total:                 442000
 False:                   6461
 False_prediction_rate:   1.46 %
 \end{verbatim}
-Among the putative unique regions we pick the highest scoring one,
-which consists of the 26\,kb between 36,688,001 and 36,714,000. This
-is fully contained in the 31\,kb region with the highest mappability.
+#+end_export
+#+begin_export latex
+What is the intersection between the 442\,kb found with \ty{macle} and
+the 2.0\,Mb found with \ty{genmap}? To find out, we use \ty{bedtools}
+to intersect the two data sets. These take columns of data as input,
+where the first three columns are sequence, start, and end. Now, the
+sequence label in \ty{com.txt} is the accession, \ty{NC\_000021.9},
+while that in \ty{map.txt} is \ty{stdin}. Clearly, intersecting
+regions can only come from the same sequence, so we convert \ty{stdin}
+to \ty{NC\_000021.9}.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
-  merwin -w 10000 -t 0.9951 chr21.cm |
-      sort -n -k 4 |
+  sed 's/stdin/NC_000021.9/' map.txt > t
+  mv t map.txt
+#+end_src
+#+begin_export latex
+The intersection is calculated with the \ty{intersect} module of
+\ty{bedtools}. We store its output in the file \ty{inter.txt}.
+#+end_export
+#+begin_src sh <<qDat.sh>>=
+  bedtools intersect -wo -a com.txt -b map.txt > inter.txt
+#+end_src
+#+begin_export latex
+The file \ty{inter.txt} contains one row per overlapping region in the
+$a$ file, \ty{com.txt}.
+#+end_export
+#+begin_src sh <<qDat.sh>>=
+  head -n 2 inter.txt
+#+end_src
+#+begin_export latex
+\footnotesize
+\begin{verbatim}
+NC_000021.9  9064001  9078000      1 NC_000021.9  9063001  9078000 0.2567 13999
+NC_000021.9 15058001 15073000 0.9976 NC_000021.9 15060001 15074000 0.2452 12999
+\end{verbatim}
+\normalsize
+#+end_export
+#+begin_export latex
+Of the 33 regions in \ty{com.txt}, 31 overlapped with a region in
+\ty{map.txt}.
+#+end_export
+#+begin_src sh <<qDat.sh>>=
+  wc -l inter.txt
+#+end_src
+#+begin_export latex
+To find out the extent to which these 31 regions overlap, we note that
+columns two and three are the start and end of the complexity interval
+and the last column the length of the overlap. So we calculate that
+our 31 focal complexity regions have a 99\,\% overlap with the
+mappability regions. In other words, the 31 complexity regions that do
+overlap, overlap completely.
+#+end_export
+#+begin_src sh <<qDat.sh>>=
+  bedtools intersect -wo -a com.txt -b map.txt |
+      awk '{l=$3-$2+1;t+=l;s+=$NF}END{print s/t*100}'
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+99.28
+\end{verbatim}
+To find the two lone regions that don't overlap, we list the
+complement of the intersection and store them in the file
+\ty{lone.txt}.
+#+end_export
+#+begin_src sh <<qDat.sh>>=
+  bedtools intersect -v -a com.txt -b map.txt > lone.txt
+#+end_src
+#+begin_export latex
+We make sure \ty{lone.txt} contains two regions.
+#+end_export
+#+begin_src sh <<qDat.sh>>=
+  cat lone.txt
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+NC_000021.9 34124001 34135000 0.9959
+NC_000021.9 35316001 35326000 0.9952
+\end{verbatim}
+#+end_export
+#+begin_export latex
+The lone regions amount to 21\,kb.
+#+end_export
+#+begin_src sh <<qDat.sh>>=
+  awk '{l=$3-$2+1;s+=l}END{print s}' lone.txt
+#+end_src
+#+begin_export latex
+So it seems as if \ty{macle} has uncovered 21 unique kb in chromosome
+21 not contained in the mappability output. Given that the other 31
+complexity regions are a virtual subset of the mappability result, we
+should check the uniqueness of the two lone regions. So we cut them
+from chromosome 21 and store them in the file \ty{lone.fasta}.
+#+end_export
+#+begin_src sh <<qDat.sh>>=
+  bedtools intersect -v -a com.txt -b map.txt |
+      while read seq start end cm; do
+	  cutSeq -r $start-$end chr21.fna
+      done > lone.fasta
+#+end_src
+#+begin_export latex
+We give the sequences unique names.
+#+end_export
+#+begin_src sh <<qDat.sh>>=
+  awk '/^>/{printf ">s%d\n", ++c}!/^>/{print}' lone.fasta > t
+  mv t lone.fasta
+#+end_src
+#+begin_export latex
+We blast the renamed sequences against chromosome 21 and store the
+result in \ty{lone.blast}.
+#+end_export
+#+begin_src sh <<qDat.sh>>=
+  blastn -query lone.fasta -db chr21 -outfmt 6 > lone.blast
+#+end_src
+#+begin_export latex
+The false prediction rate for the lone regions is 0.6\,\%, which is
+gratifyingly low. So these are genuine unique regions not contained in
+the mappability output.
+#+end_export
+#+begin_src sh <<qDat.sh>>=
+  awk -f ../scripts/fp.awk lone.blast
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+Total:                 21000  
+False:                   122  
+False_prediction_rate:  0.58 %
+\end{verbatim}
+From the putative unique regions we pick the highest scoring one,
+which consists of the 26\,kb between 36,688,001 and 36,714,000. Not
+surprisingly given our overlap analysis, this highest scoring
+complexity region is fully contained in the 31\,kb of the highest
+scoring mappability region.
+#+end_export
+#+begin_src sh <<qDat.sh>>=
+  sort -n -k 4 com.txt |
       tail -n 1
 #+end_src
 #+begin_export latex
@@ -512,25 +643,24 @@ of the \emph{SIM2} gene, ``s''.
   echo "36.749917 0.1 s" >> chr21.dat
 #+end_src
 #+begin_export latex
-Figure~\ref{fig:chr21} shows a slightly edited plot of our region. The mappability
-and $\cm$ are closely correlated, though the $\cm$ has the advantage
-that we can set a threshold that allows us to pick unique regions.
-
-For \ty{genmap}, threshold computation evidently still needs to be
-developed. If we lowered the mappability threshold from 0.9388 to
-0.92, the longest interval we'd pick would be 16\,kb in the region
-36,692,001--36,708,000, also intersecting the SIM gene (not shown).
+We use the program \ty{plotLine} to plot the data we just
+generated. Figure~\ref{fig:chr21} shows that the $(15,1)$ mappability
+and complexity are closely correlated. We also see that based on
+$(15,1)$ mappability we predict more unique regions than based on
+complexity.
 \begin{figure}
   \begin{center}
-    \includegraphics[width=0.8\textwidth]{../qDat/chr21}
+    \includegraphics{../qDat/chr21}
   \end{center}
   \caption{Two measures of uniqueness along a portion of human
-    chromosome 21, \emph{Complexity} ($\cm$) and the
-    \emph{Mappability}; the dashed lines show the respective
-    thresholds; the promoter and 5' region of the SIM2 \emph{Gene} is
-    intersected by the \emph{Unique region}.}\label{fig:chr21}
+    chromosome 21, the complexity \emph{c} and the mappability
+    \emph{m}; the long horizontal lines show the respective
+    thresholds, \emph{tc} and \emph{tm}; the promoter and 5' region of
+    the gene encoding the SIM2 protein, \emph{s}, is intersected by
+    the unique region based on mappability, \emph{um}, and by that
+    based on complexity, \emph{uc}.}\label{fig:chr21}
 \end{figure}
 #+end_export
 #+begin_src sh <<qDat.sh>>=
-  plotLine -Y "0:1.1" -x "Position (Mb)" -y "Uniqueness" chr21.dat
+  plotLine -x "Position (Mb)" -y "Uniqueness" chr21.dat
 #+end_src
