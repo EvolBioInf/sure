@@ -520,17 +520,27 @@ Of the 33 regions in \ty{com.txt}, 31 overlapped with a region in
 To find out the extent to which these 31 regions overlap, we note that
 columns two and three are the start and end of the complexity interval
 and the last column the length of the overlap. So we calculate that
-our 31 focal complexity regions have a 99\,\% overlap with the
-mappability regions. In other words, the 31 complexity regions that do
-overlap, overlap completely.
+our 31 focal complexity regions sum to 419\,kb that have a 99\,\%
+overlap with the mappability regions. In other words, the 31
+complexity regions that do overlap, overlap completely.
 #+end_export
 #+begin_src sh <<qDat.sh>>=
   bedtools intersect -wo -a com.txt -b map.txt |
-      awk '{l=$3-$2+1;t+=l;s+=$NF}END{print s/t*100}'
+      awk '{l=$3-$2+1;t+=l;s+=$NF}END{print s, s/t*100}'
 #+end_src
 #+begin_export latex
 \begin{verbatim}
-99.28
+417969 99.28
+\end{verbatim}
+The total overlap, including the two regions without any overlap, is
+still a respectable 95\,\%.
+#+end_export
+#+begin_src sh <<qDat.sh>>=
+  echo '417969 / 442000' | bc -l
+#+end_src
+#+begin_export latex
+\begin{verbatim}
+0.945631221719457
 \end{verbatim}
 To find the two lone regions that don't overlap, we list the
 complement of the intersection and store them in the file
