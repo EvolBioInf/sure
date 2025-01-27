@@ -3,7 +3,13 @@ set output "chr21.ps"
 set xlabel "Position (Mb)"
 set ylabel "Uniqueness"
 set key right center
-plot[*:*][0:1.1] "-" t "c" w l, "-" t "m" w l, "-" t "tc" w l, "-" t "tm" w l, "-" t "u" w l lw 3 lc "red", "-" t "s" w l lw 3
+plot[*:*][0:1.1] \
+		 "-" t "c" w l, \
+		 "-" t "m" w l, \
+		 "-" t "tc" w l, \
+		 "-" t "tm" w l, \
+		 "-" t "u" w l lw 3 lc "red", \
+		 "-" t "s" w l lw 3
 36.589	0.8776
 36.59	0.8763
 36.591	0.8670
