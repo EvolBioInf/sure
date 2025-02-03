@@ -128,8 +128,6 @@ previous query.
 Now we are ready to print the rate of false predictions.
 #+end_export
 #+begin_src awk <<Print false prediction rate, Pr. \ref{pr:fp}>>=
-  printf "Total: %d\n", len
-  printf "False: %d\n", fp
-  fp = fp / len * 100.0
-  printf "False_prediction_rate: %.2f %\n", fp
+  printf "# Total\tFalse\tf_p\n"
+  printf "%s\t%s\t%s\n", len, fp, fp / len * 100
 #+end_src

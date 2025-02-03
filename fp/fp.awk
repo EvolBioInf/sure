@@ -29,8 +29,6 @@ END {
     len++
     fp += query[i]
   }
-  printf "Total: %d\n", len
-  printf "False: %d\n", fp
-  fp = fp / len * 100.0
-  printf "False_prediction_rate: %.2f %\n", fp
+  printf "# Total\tFalse\tf_p\n"
+  printf "%s\t%s\t%s\n", len, fp, fp / len * 100
 }

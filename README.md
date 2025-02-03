@@ -6,6 +6,8 @@ Beatriz Vieira Mourato and Bernhard Haubold
 This package accompanies our forthcoming review of fast methods for
 finding unique regions in genome sequences.
 
+## [Documentation](https://owncloud.gwdg.de/index.php/s/598wWizO5dto4nX)
+
 ## Generate Scripts
 Simply execute
 ```
