@@ -2,12 +2,14 @@
 */*.idx
 */*.txt
 data/
+doc/acc.tex
 doc/date.txt
 doc/fp.tex
 doc/qDat.tex
 doc/qSim.tex
 doc/qsDat.tex
 doc/qsSim.tex
+doc/sp.tex
 doc/sure.aux
 doc/sure.bbl
 doc/sure.blg

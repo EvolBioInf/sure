@@ -225,10 +225,12 @@ the resulting tree.
     \includegraphics{../qsDat/nei}
   \end{center}
   \caption{Phylogeny of taxonomic targets (\ty{t}) and neighbors
-    (\ty{n}) for target \emph{Legionella pneumophila}
-    subsp. pneumophila; the phylogenetic targets ($T$) contain six
-    taxonomic neighbors that don't cluster with the phylogenetic
-    neighbors ($N$).}\label{fig:nei}
+    (\ty{n}) for \emph{Legionella pneumophila}. The targets ($T$)
+    consist of subspecies \emph{pneumophila} (\emph{pn}), the
+    neighbors ($N$) of the two subspecies \emph{fraseri} (\emph{fr})
+    and \emph{pascullei} (\emph{pa}). The phylogenetic targets ($T$)
+    contain six taxonomic neighbors that don't cluster with the
+    phylogenetic neighbors.}\label{fig:nei}
 \end{figure}
 #+end_export
 #+begin_src sh <<qsDat.sh>>=
