@@ -1,0 +1,178 @@
+#+begin_export latex
+\section{\ty{acc.awk}: Calculate the Accuracy}
+The prorgam \ty{acc.awk} calculates the accuracy of a single
+prediction, given the ground truth. It is based on the correlation,
+$C$, between truth and prediction taken from the gene prediction
+literature~\cite[p. 121f]{hau06:int},
+\begin{equation}\label{eq:acc}
+C=\frac{\tp\tn-\fp\fn}{\sqrt{(\tp+\fp)(\tn+\fn)(\tn+\fp)(\tp+\fn)}},
+\end{equation}
+where $\tp$ are the true positive positions, $\tn$ the true negatives,
+$\fp$ the false positives, and $\fn$ the false negatives.
+
+\begin{figure}[ht]
+\begin{center}
+\begin{tabular}{cc}
+\textbf{A} & \textbf{B}\\
+\includegraphics{../acc/acc1} &
+\includegraphics{../acc/acc2}
+\end{tabular}
+\end{center}
+\caption{Overview of (\textbf{A}) and zoom into (\textbf{B}) the
+  prediction (\emph{p}) and the true (\emph{t}) unique region for our
+  sample calculation of $C$ according to
+  equation~(\ref{eq:acc}).}\label{fig:acc}
+\end{figure}
+
+The program \ty{acc.awk} takes as input the true start and end of the
+unique interval, and the length of the target sequence. For example,
+the unique region might have length $u=\mbox{1\,kb}$ and be located at
+4501--5500 in a target of length $\ell=\mbox{10\,kb}$. In
+Figure~\ref{fig:acc} this is shown as the truth, \emph{t}. The program
+\ty{acc.awk} then compares this truth to the coordinates of the
+prediction obtained using a program like \ty{fur}. These coordinates
+are generated using \ty{sblast} (Biobox). The output from \ty{sblast}
+consists of seven columns, of which \ty{acc.awk} uses the subject
+start and end in columns 5 and 6. Figure~\ref{fig:sblast} shows an
+example output from \ty{sblast}, which is plotted as the prediction,
+\emph{p}, in Figure~\ref{fig:acc}.
+
+\begin{figure}[ht]
+\begin{center}
+\begin{boxedverbatim}
+#qa              sa  qs  qe    ss    se    score
+t9_(4480..5523)  t1  1   1044  4480  5523  996.0
+\end{boxedverbatim}
+\end{center}
+\caption{Sample output from the program \ty{sblast}, which is read by
+  \ty{acc.awk}.}\label{fig:sblast}
+\end{figure}
+
+To calculate $C$ from our example coordinates in Figures~\ref{fig:acc}
+and \ref{fig:sblast}, we begin with the true positives, which are the
+unique nucleotides minus the false negatives.  $\tp=u-\fn$. Since in
+our case all unique nucleotides were found, there are no false
+negatives, $\fn=0$, and $\tp=1000$. The true negatives are the target
+nucleotides outside the unique region minus the false positives,
+$\tn=\ell-u-\fp$. The false positives are the predictions beyond the
+target interval, in our case $\fp=23+21=44$, so
+$\tn=10000-1000-44=8956$. If we plug these numbers into
+equation~(\ref{eq:acc}), we get $C\approx 0.98$
+
+The outline of \ty{acc.awk} consists of three blocks. The begin block
+is executed before any input is parsed, the line block is executed for
+every input line that isn't a comment, and the end block is executed
+after all input has been parsed.  \bpr{acc.awk}{pr:acc}
+#+end_export
+#+begin_src awk <<acc.awk>>=
+  BEGIN {
+    ##<<Begin block, Pr. \ref{pr:acc}>>
+  }
+  !/^#/ {
+    ##<<Line block, Pr. \ref{pr:acc}>>
+  }
+  END {
+    ##<<End block, Pr. \ref{pr:acc}>>
+  }
+#+end_src
+#+begin_export latex
+\epr
+In the begin block, we interact with the user and initialize an array
+of possible Blast hits.
+#+end_export
+#+begin_src awk <<Begin block, Pr. \ref{pr:acc}>>=
+  ##<<Interact with user, Pr. \ref{pr:acc}>>
+  ##<<Initialize hits, Pr. \ref{pr:acc}>>
+#+end_src
+#+begin_export latex
+The user needs to set the true start and end of the unique region, and
+the target length. If one of these three quantities is not set, we
+bail with a friendly message.
+#+end_export
+#+begin_src awk <<Interact with user, Pr. \ref{pr:acc}>>=
+  m = "please set the true start (ts), "
+  m = m "true end (te), "
+  m = m "and target length (tl)"
+  if (!ts || !te || !tl) {
+    print m
+    exit
+  }
+#+end_src
+#+begin_export latex
+We initialize the positions of potential Blast hits to zero across the
+target length.
+#+end_export
+#+begin_src awk <<Initialize hits, Pr. \ref{pr:acc}>>=
+  for (i = 1; i <= tl; i++)
+    hit[i] = 0
+#+end_src
+#+begin_export latex
+In the line block, we set the subject positions covered by the current
+Blast hit to 1. As already mentioned, the subject start is in column
+5, the subject end in column 6 (Figure~\ref{fig:sblast}).
+#+end_export
+#+begin_src awk <<Line block, Pr. \ref{pr:acc}>>=
+  s = $5
+  e = $6
+  for (i = s; i <= e; i++)
+    hit[i] = 1
+#+end_src
+#+begin_export latex
+Having parsed all Blast results, we calculate $\tp, \fp, \tn$, and
+$\fn$. Then we calculate and print $C$.
+#+end_export
+#+begin_src awk <<End block, Pr. \ref{pr:acc}>>=
+  ##<<Calculate $\tp$, Pr. \ref{pr:acc}>>
+  ##<<Calculate $\fp$, Pr. \ref{pr:acc}>>
+  ##<<Calculate $\tn$, Pr. \ref{pr:acc}>>
+  ##<<Calculate $\fn$, Pr. \ref{pr:acc}>>
+  ##<<Calculate and print $C$, Pr. \ref{pr:acc}>>
+#+end_src
+#+begin_export latex
+The true positives, $\tp$, are the positions with Blast hits between
+the true start and end of the unique interval.
+#+end_export
+#+begin_src awk <<Calculate $\tp$, Pr. \ref{pr:acc}>>=
+  tp = 0
+  for (i = ts; i <= te; i++)
+    tp += hit[i]
+#+end_src
+#+begin_export latex
+The false positives, $\fp$, are the Blast hits outside of the unique
+region.
+#+end_export
+#+begin_src awk <<Calculate $\fp$, Pr. \ref{pr:acc}>>=
+  fp = 0
+  for (i = 1; i < ts; i++)
+    fp += hit[i]
+  for (i = te+1; i <= tl; i++)
+    fp += hit[i]
+#+end_src
+#+begin_export latex
+The true negatives, $\tn$, are the positions outside of the unique
+region that weren't hit.
+#+end_export
+#+begin_src awk <<Calculate $\tn$, Pr. \ref{pr:acc}>>=
+  l = te - ts + 1
+  tn = tl - l - fp
+#+end_src
+#+begin_export latex
+The false negatives, $\fn$, are the positions of the unique region
+that were missed.
+#+end_export
+#+begin_src awk <<Calculate $\fn$, Pr. \ref{pr:acc}>>=
+  fn = l - tp
+#+end_src
+#+begin_export latex
+We calculate $C$ according to equation~(\ref{eq:acc}) and print it.
+#+end_export
+#+begin_src awk <<Calculate and print $C$, Pr. \ref{pr:acc}>>=
+  n = tp * tn - fp * fn
+  d = sqrt((tp + fp) * (tn + fn) * (tn + fp) * (tp + fn))
+  if (d > 0)
+    c = n / d
+  else
+    c = 0
+  printf "C: %f\n", c
+#+end_src
+

@@ -32,9 +32,10 @@ save the index to the file \ty{q\_gm.idx}.
   genmap index -F q.fasta -I q_gm.idx
 #+end_src
 #+begin_export latex
-Then we calculate the mappability with k-mers of length 15 (\ty{-K})
-that are matched without errors (\ty{-E}) with output written to
-\ty{q\_gm.out} (\ty{-O}) in text format (\ty{-t}).
+Then we calculate the $(15,0)$-mappability, that is, the mappability
+with k-mers of length 15 (\ty{-K}) that are matched without errors
+(\ty{-E}) with output written to \ty{q\_gm.out} (\ty{-O}) in text
+format (\ty{-t}).
 #+end_export
 #+begin_src sh <<qSim.sh>>=
   genmap map -I q_gm.idx/ -K 15 -E 0 -O q_gm.out -t 
@@ -42,7 +43,7 @@ that are matched without errors (\ty{-E}) with output written to
 #+begin_export latex
 This generates the output file \ty{q\_gm.out.txt}, which contains the
 output in a version of the FASTA format, where the header is followed
-by single row of data. The data row contains a mappability value for
+by a single row of data. The data row contains a mappability value for
 each position in the input sequence, five million mappability values
 in our case. To make this lengthy row of data easier to parse, we wrap
 it into shorter rows with the program \ty{wrapSeq}, also from the
@@ -128,7 +129,7 @@ or repeat. We do this using a threshold mappability, $t_{\rm m}$; if
 the mappability of a window is greater or equal to $t_{\rm m}$, it is
 deemed unique. To estimate this threshold, we realize that the values
 from our windows analysis of a random sequence constitute the relevant
-null distribution. Sowe  cut off the lowest 5\% of the windowed
+null distribution. So we  cut off the lowest 5\% of the windowed
 mappability values. Since the windows advance by $1000/10=100$ steps,
 there are roughly $5\times 10^6/100=5\times 10^4$ windows, of which
 5\% are 2500. So we sort the values and look up the 2500-th entry in
@@ -376,7 +377,7 @@ We calculate the \ty{macle} index of our new query.
   macle -s q3.fasta > q3_ma.idx
 #+end_src
 #+begin_export latex
-Figure~\ref{fig:qma2} shows q sliding window plot of $\cm$ along the
+Figure~\ref{fig:qma2} shows a sliding window plot of $\cm$ along the
 first 5\,Mb of the sequence. The values fluctuate around a mean of
 0.2. However, none of them is close to 1.
 \begin{figure}

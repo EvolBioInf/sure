@@ -1,6 +1,8 @@
 #+begin_export latex
-The program \ty{fp.awk} reads a table of Blast results, which consists
-of twelve columns
+\section{\ty{sp.awk}: Calculate the Specificity}
+The program \ty{sp.awk} reads a table of Blast results and calculates
+the specificity of predicting unique regions from it. The Blast result
+consists of twelve columns
 \begin{enumerate}
 \item query accession
 \item subject accession
@@ -37,18 +39,18 @@ that of the previous query to decide whether we are in the same query
 as before or not. After every line has been parsed, we process the
 last line and print the false prediction rate.
 
-\bpr{pf.awk}{pr:fp}
+\bpr{pf.awk}{pr:sp}
 #+end_export
-#+begin_src awk <<fp.awk>>=
+#+begin_src awk <<sp.awk>>=
   {
-    ##<<Check line, Pr. \ref{pr:fp}>>
+    ##<<Check line, Pr. \ref{pr:sp}>>
     curQuery = $1
-    ##<<Compare current and previous query, Pr. \ref{pr:fp}>>
+    ##<<Compare current and previous query, Pr. \ref{pr:sp}>>
     prevQuery = curQuery
   }
   END {
-    ##<<Process last query, Pr. \ref{pr:fp}>>
-    ##<<Print false prediction rate, Pr. \ref{pr:fp}>>
+    ##<<Process last query, Pr. \ref{pr:sp}>>
+    ##<<Print false prediction rate, Pr. \ref{pr:sp}>>
   }
 #+end_src
 #+begin_export latex
@@ -56,9 +58,10 @@ last line and print the false prediction rate.
 If the current line does not contain twelve fields, something is wrong
 and we exit with a friendly message.
 #+end_export
-#+begin_src awk <<Check line, Pr. \ref{pr:fp}>>=
+#+begin_src awk <<Check line, Pr. \ref{pr:sp}>>=
   if (NF != 12) {
-    printf "Blast output should have twelve columns, not %d.\n", NF
+    printf "Blast output should have twelve columns, not %d.\n",
+      NF
     printf "Please check your input.\n"
     exit 1
   }
@@ -67,22 +70,22 @@ and we exit with a friendly message.
 If the current query is identical to the previous one, we have falsely
 predicted material and mark that. Otherwise, we've found a new query
 and respond to that. In either case we need the query start and end,
-so we store that first.
+so we store them first.
 #+end_export
-#+begin_src awk <<Compare current and previous query, Pr. \ref{pr:fp}>>=
+#+begin_src awk <<Compare current and previous query, Pr. \ref{pr:sp}>>=
   qs = $7
   qe = $8
   if (curQuery == prevQuery) {
-    ##<<Mark false prediction, Pr. \ref{pr:fp}>>
+    ##<<Mark false prediction, Pr. \ref{pr:sp}>>
   } else {
-    ##<<Respond to new query, Pr. \ref{pr:fp}>>
+    ##<<Respond to new query, Pr. \ref{pr:sp}>>
   }
 #+end_src
 #+begin_export latex
 We mark false predictions by setting their positions to one in the
 array \ty{query}.
 #+end_export
-#+begin_src awk <<Mark false prediction, Pr. \ref{pr:fp}>>=
+#+begin_src awk <<Mark false prediction, Pr. \ref{pr:sp}>>=
   for (i = qs; i <= qe; i++)
     query[i] = 1
 #+end_src
@@ -90,17 +93,17 @@ array \ty{query}.
 If we found a new query, we summarize the previous query, if it
 exists, and prepare for the new query.
 #+end_export
-#+begin_src awk <<Respond to new query, Pr. \ref{pr:fp}>>=
+#+begin_src awk <<Respond to new query, Pr. \ref{pr:sp}>>=
   if (NR > 1) {
-    ##<<Summarize previous query, Pr. \ref{pr:fp}>>
+    ##<<Summarize previous query, Pr. \ref{pr:sp}>>
   }
-  ##<<Prepare new query, Pr. \ref{pr:fp}>>
+  ##<<Prepare new query, Pr. \ref{pr:sp}>>
 #+end_src
 #+begin_export latex
 To summerize the query, we iterate across it and count its length,
-\ty{len} its false predictions, \ty{fp}.
+\ty{len}, and its false predictions, \ty{fp}.
 #+end_export
-#+begin_src awk <<Summarize previous query, Pr. \ref{pr:fp}>>=
+#+begin_src awk <<Summarize previous query, Pr. \ref{pr:sp}>>=
   for (i in query) {
     len++
     fp += query[i]
@@ -110,7 +113,7 @@ To summerize the query, we iterate across it and count its length,
 We prepare the new query by deleting all previous entries and
 initializing the new entries to zero.
 #+end_export
-#+begin_src awk <<Prepare new query, Pr. \ref{pr:fp}>>=
+#+begin_src awk <<Prepare new query, Pr. \ref{pr:sp}>>=
   for (i in query)
     delete query[i]
   for (i = qs; i <= qe; i++)
@@ -121,13 +124,14 @@ At this point we have parsed all Blast results, but the last query
 remains to be processed, which---as always---we do by summarizing the
 previous query.
 #+end_export
-#+begin_src sh <<Process last query, Pr. \ref{pr:fp}>>=
-  <<Summarize previous query, Pr. \ref{pr:fp}>>
+#+begin_src sh <<Process last query, Pr. \ref{pr:sp}>>=
+  <<Summarize previous query, Pr. \ref{pr:sp}>>
 #+end_src
 #+begin_export latex
-Now we are ready to print the rate of false predictions.
+Now we are ready to print the specificity.
 #+end_export
-#+begin_src awk <<Print false prediction rate, Pr. \ref{pr:fp}>>=
-  printf "# Total\tFalse\tf_p\n"
-  printf "%s\t%s\t%s\n", len, fp, fp / len * 100
+#+begin_src awk <<Print false prediction rate, Pr. \ref{pr:sp}>>=
+  sp = (len - fp) / len
+  printf "# Total\tFalse\ts_p\n"
+  printf "%s\t%s\t%s\n", len, fp, sp
 #+end_src

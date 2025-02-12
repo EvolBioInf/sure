@@ -1,6 +1,7 @@
 {
   if (NF != 12) {
-    printf "Blast output should have twelve columns, not %d.\n", NF
+    printf "Blast output should have twelve columns, not %d.\n",
+      NF
     printf "Please check your input.\n"
     exit 1
   }
@@ -29,6 +30,7 @@ END {
     len++
     fp += query[i]
   }
-  printf "# Total\tFalse\tf_p\n"
-  printf "%s\t%s\t%s\n", len, fp, fp / len * 100
+  sp = (len - fp) / len
+  printf "# Total\tFalse\ts_p\n"
+  printf "%s\t%s\t%s\n", len, fp, sp
 }

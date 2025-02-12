@@ -1,22 +1,20 @@
 #+begin_export latex
 \section{Introduction}
-In Chapter~\ref{ch:q} we searched for unique regions within a query
-sequence with respect to that same query sequence. In the current
-Chapter, we search for unique regions present in queries sequences
-with respect to one or more subject sequences. Given a sample of query
-and subject sequences, we can search for all query regions that are
-absent from the subjects, but present in all queries. An example of
-this approach is implemented in the program
-\ty{fur}~\cite{hau21:fur,vie24:mar}. If the subject sequences are the
-closest distinct relatives of the query, the ubiquitous query regions
-returned by \ty{fur} are highly enriched for diagnostic
-markers~\cite{san20:rec,vie24:mar}.
+In the previous chapter we searched for unique regions within a query
+sequence with respect to that same query sequence. In this chapter, we
+search for unique regions present in queries sequences with respect to
+one or more subject sequences. Given a sample of query and subject
+sequences, we can search for all query regions that are absent from
+the subjects, but present in all queries. An example of this approach
+is implemented in the program \ty{fur}~\cite{hau21:fur,vie24:mar}. If
+the subject sequences are the closest distinct relatives of the query,
+the ubiquitous query regions returned by \ty{fur} are highly enriched
+for diagnostic markers~\cite{san20:rec,vie24:mar}.
 
 To get an intuition for \ty{fur}, we first apply it to simulated
 data. This is generated with the program
 \ty{stan}\footnote{\ty{github.com/evolbioinf/stan}}, which simulates
-markers in samples of target and neighbor sequences, as the name
-suggests.
+target and neighbor sequences, as the name suggests.
 
 Then we apply \ty{fur} to real genome sequences sampled from
 \emph{Legionella pneumophila} and its neighbors. \emph{L. pneumophila}
@@ -175,4 +173,16 @@ t2_(4492..5499)  t2  1   1008  4492  5499  1000.0
 Recall that the true marker covers the interval 4501--5500. So our
 result of 4492--5499 has a tiny overlap of 9\,bp with homologous
 material on the marker's 5' end, and the loss of 1\,bp at its 3' end.
+
+If we'd like to quantify the quality of our prediction, we can use the
+script \ty{acc.awk}. As explained in Section~\ref{sec:acc}, it
+compares the true unique region with the prediction localized by
+\ty{sblast} to calculate their correlation, $C$; a perfect prediction
+has $C=1$, a completely inverted prediction $C=-1$. In our example,
+$C=98$.
 #+end_export
+#+begin_src sh <<qsSim.sh>>=
+  sblast markers.fasta targets/t2.fasta |
+      awk -f ../scripts/acc.awk \
+	  -v ts=4501 -v te=5500 -v tl=10000
+#+end_src

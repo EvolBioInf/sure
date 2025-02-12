@@ -4,13 +4,15 @@ We have seen how to simulate samples of target and neighbor sequences
 with \ty{stan}. Given such data, we can use \ty{fur} to extract the
 markers. This gives us confidence to now turn to real data.
 
-As an example of real data we picked the bacterium \emph{Legionella
-pneumophila}, which causes legionaires' disease in humans, a form of
-pneumonia. Apart from its medical importance, we picked
-\emph{L. pneumophila} as our example species for its suitable sample
-size---neither too large, nor too small---and the appearance of a
-common problem in target/neighbor analyses, the incongruence between
-taxonomy and phylogeny.
+We picked the bacterium \emph{Legionella pneumophila}
+subsp. \emph{pneumophila} as our example. It is one of three
+subspecies of \emph{L. pneumophila}~\cite{bre88:leg}, which causes
+legionaires' disease in humans, a form of
+pneumonia~\cite{via22:leg}. Apart from its medical importance,
+\emph{L. pneumophila} has a suitable sample size---neither too large,
+nor too small---and shares a common problem in target/neighbor
+analyses, the incongruence between taxonomy and phylogeny.
+
 \subsection*{Download Genomes}
 We find the genomes available for \emph{L. pneumoniae} and its close
 relatives using programs from the Neighbors
@@ -18,10 +20,10 @@ package\footnote{\ty{github.com/evolbioinf/neighbors}}. These are
 based on an \ty{sqlite} database, \ty{neidb}. To keep this tutorial
 stable, we use a version of \ty{neidb} built on October 8, 2024. If
 you would like to work with the latest version of the NCBI taxonomy,
-the Neighbors documentation contains a description of how to build
-\ty{neidb} from scratch, which takes a few minutes. We, however,
-download a compressed verion of the pre-built database and save it to
-the name \ty{neidb\_08\_oct\_24.bz2}.
+the Neighbors documentation describes how to build \ty{neidb} from
+scratch, which takes a few minutes. We, however, download a compressed
+verion of the pre-built database and save it to the name
+\ty{neidb\_08\_oct\_24.bz2}.
 #+end_export
 #+begin_src sh <<qsDat.sh>>=
   url="owncloud.gwdg.de/index.php/s/oN2RXExwahRPWgg/download"
@@ -77,8 +79,8 @@ using the program \ty{ants} (Neighbors).
 \normalsize We can see that the taxon ID of our target is 91891. As
 neighbors we take its closest relatives. We look up the genomes of
 targets and neighbors with the \ty{neighbors} program
-(Neighbors). Using the \ty{-g} option, we restrict the output of
-\ty{neighbors} to the taxa with genome sequences.
+(Neighbors). Using its \ty{-g} option, we restrict the output to the
+taxa with genome sequences.
 #+end_export
 #+begin_src sh <<qsDat.sh>>=
   printf 91891 | neighbors -g neidb_08_oct_24
@@ -96,7 +98,7 @@ n       66976     Legionella pneumophila ...  GCA_001685545.1...
 \end{verbatim}
 The output of \ty{neighbors} consists of the target we entered
 (\ty{t}), the extra targets found by the program (\ty{tt}), and the
-neighbors (\ty{n}). For each taxon ID the accessions of the
+neighbors (\ty{n}). For each taxon ID, the accessions of the
 corresponding genome assemblies are listed, \ty{GCA\_*}. In order to
 download these assemblies, we run \ty{neighbors} in list mode and
 store the output in the file \ty{acc.txt}.
@@ -210,7 +212,13 @@ To make the phylogeny easier to read, we reduce the leaf labels of
 targets and neighbors to \ty{t} and \ty{n}. Figure~\ref{fig:nei} shows
 the resulting tree.
 \begin{figure}
-  \psfrag{ tx}{ t\rput(-6.3,-2.2){$T$}\rput(-6.3,-6.9){$N$}}
+  \psfrag{ tx}{ t
+    \rput(-6.3,-2.2){$T$}
+    \rput(-6.3,-6.9){$N$}
+    \rput(-3,-2.2){\emph{pn}}
+    \rput(-3,-6.4){\emph{fr}}
+    \rput(-3,-7.4){\emph{pa}}
+  }
   \psfrag{ t}{t}
   \psfrag{ n}{n}
   \begin{center}
@@ -228,12 +236,15 @@ the resulting tree.
       plotTree
 #+end_src
 #+begin_export latex
-The phylogeny in Figure~\ref{fig:nei} is neatly divided into two
-clades. However, the clade dominated by targets also contains six
-neighbors. So we lump these taxonomic neighbors with the phylogenetic
-targets. To automatically divide the genomes between targets and
-neighbors, we label the nodes in the phylogeny with the program
-\ty{land} (Neighbors) and find that clade 16 is the target clade.
+The phylogeny in Figure~\ref{fig:nei} is neatly divided into three
+clades, the three subspecies of \emph{L. pneumonia}, with
+\emph{pneumophila} the target, \emph{fraseri} and \emph{pascullei} the
+neighbors. However, the \emph{pneumophila} clade also contains six
+neighbors among the monophyletic 21 taxonomic targets. So we lump
+these taxonomic neighbors with the phylogenetic targets. To
+automatically divide the genomes between targets and neighbors, we
+label the nodes in the phylogeny with the program \ty{land}
+(Neighbors) and find that clade 16 is the target clade.
 #+end_export
 #+begin_src sh <<qsDat.sh>>=
   land all.nwk | plotTree
@@ -294,7 +305,8 @@ three lines of file \ty{markers.fasta} and store it in
   head -n 3 markers.fasta > markers1.fasta
 #+end_src
 #+begin_export latex
-In the comparison to the targets we expect 27 hits, which is what we find.
+In the comparison to the targets with \ty{sblast} we expect 27 hits,
+which is what we find.
 #+end_export
 #+begin_src sh <<qsDat.sh>>=
   sblast markers1.fasta targets/*.fna |

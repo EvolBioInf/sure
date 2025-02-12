@@ -1,6 +1,6 @@
 TEXT = sure
 SRC1 = $(TEXT).tex intro.tex ref.bib ../qsSim/coaNames.tex
-SRC2 = qDat.tex qSim.tex qsDat.tex qsSim.tex fp.tex
+SRC2 = qDat.tex qSim.tex qsDat.tex qsSim.tex sp.tex acc.tex
 
 date = $(shell git log | grep Date | head -n 1 | sed -r 's/Date: +[A-Z][a-z]+ ([A-Z][a-z]+) ([0-9]+) [^ ]+ ([0-9]+) .+/\2_\1_\3/')
 version = $(shell git describe)

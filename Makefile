@@ -5,8 +5,10 @@ all:
 		cp $$script/$$script.sh scripts; \
 	done
 	cp qsSim/cut.awk scripts
-	make -C fp
-	cp fp/fp.awk scripts
+	make -C sp
+	cp sp/sp.awk scripts
+	make -C acc
+	cp acc/acc.awk scripts
 .PHONY: doc data newNeidb
 doc:
 	make -C doc

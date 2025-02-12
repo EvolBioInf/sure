@@ -29,11 +29,11 @@ tail -n +2 chr21r_gm.out.txt |
     head -n 2004 |
     tail -n 1
 merwin -w 10000 -t 0.9388 chr21.map
-genmap map -I chr21_gm.idx/ -K 15 -E 1 -O chr21_gm_1.out -t
+genmap map -I chr21_gm.idx/ -K 50 -E 1 -O chr21_gm_1.out -t
 tail -n +2 chr21_gm_1.out.txt |
     tr ' ' '\n' |
     sw -w 10000 > chr21_1.map
-genmap map -I chr21r_gm.idx/ -K 15 -E 1 -O chr21r_gm_1.out -t
+genmap map -I chr21r_gm.idx/ -K 50 -E 1 -O chr21r_gm_1.out -t
 tail -n +2 chr21r_gm_1.out.txt |
     tr ' ' '\n' |
     sw -w 10000 |
@@ -41,8 +41,8 @@ tail -n +2 chr21r_gm_1.out.txt |
     sort -n |
     head -n 2004 |
     tail -n 1
-merwin -w 10000 -t 0.2416 chr21_1.map | head
-merwin -w 10000 -t 0.2416 chr21_1.map > map.txt
+merwin -w 10000 -t 1 chr21_1.map | head
+merwin -w 10000 -t 1 chr21_1.map > map.txt
 wc -l map.txt
 awk '{l=$3-$2+1;s+=l}END{print s}' map.txt
 while read query start end map; do
@@ -63,11 +63,7 @@ grep '^>' map.fasta |
         wc -l
 makeblastdb -in chr21.fna -out chr21 -dbtype nucl
 blastn -query map.fasta -db chr21 -outfmt 6 > map.blast
-awk -f ../scripts/fp.awk map.blast
-sort -k 4 -n map.txt |
-    tail -n 1
-awk '$1=="NC_000021.9" && $3=="gene"' hs.gff |
-    awk '$4<=36717000 && $5>=36686001'
+awk -f ../scripts/sp.awk map.blast
 macle -s chr21.fna > chr21_ma.idx
 macle -w 10000 chr21_ma.idx > chr21.cm
 macle -l chr21_ma.idx
@@ -83,7 +79,7 @@ cres com.fasta
 awk '/^>/{printf ">c%d\n", ++c}!/^>/{print}' com.fasta > t
 mv t com.fasta
 blastn -query com.fasta -db chr21 -outfmt 6 > com.blast
-awk -f ../scripts/fp.awk com.blast
+awk -f ../scripts/sp.awk com.blast
 sed 's/stdin/NC_000021.9/' map.txt > t
 mv t map.txt
 bedtools intersect -wo -a com.txt -b map.txt > inter.txt
@@ -91,7 +87,7 @@ head -n 2 inter.txt
 wc -l inter.txt
 bedtools intersect -wo -a com.txt -b map.txt |
     awk '{l=$3-$2+1;t+=l;s+=$NF}END{print s, s/t*100}'
-echo '417969 / 442000' | bc -l
+echo '357971 / 442000' | bc -l
 bedtools intersect -v -a com.txt -b map.txt > lone.txt
 cat lone.txt
 awk '{l=$3-$2+1;s+=l}END{print s}' lone.txt
@@ -102,21 +98,23 @@ bedtools intersect -v -a com.txt -b map.txt |
 awk '/^>/{printf ">s%d\n", ++c}!/^>/{print}' lone.fasta > t
 mv t lone.fasta
 blastn -query lone.fasta -db chr21 -outfmt 6 > lone.blast
-awk -f ../scripts/fp.awk lone.blast
-sort -n -k 4 com.txt |
-    tail -n 1
+awk -f ../scripts/sp.awk lone.blast
+sort -n -k 9 -r inter.txt |
+    head
+awk '$1=="NC_000021.9" && $3=="gene"' hs.gff |
+    awk '$4<=36714000 && $5>=36686001'
 awk '$2>=36588001 && $2<=36814000 {print $2/1000000, $3, "c"}' \
     chr21.cm > chr21.dat
 awk '$2>=36588001 && $2<=36814000 {print $2/1000000, $3, "m"}' \
     chr21_1.map >> chr21.dat
+echo "36.588001 1 tm" >> chr21.dat
+echo "36.814000 1 tm" >> chr21.dat
 echo "36.588001 0.9951 tc" >> chr21.dat
 echo "36.814000 0.9951 tc" >> chr21.dat
-echo "36.588001 0.2416 tm" >> chr21.dat
-echo "36.814000 0.2416 tm" >> chr21.dat
-echo "36.688001 0.2 uc"  >> chr21.dat
-echo "36.714000 0.2 uc"  >> chr21.dat
-echo "36.686001 0.15 um" >> chr21.dat
-echo "36.717000 0.15 um" >> chr21.dat
-echo "36.699115 0.1 s" >> chr21.dat
-echo "36.749917 0.1 s" >> chr21.dat
+echo "36.688001 0.65 uc"  >> chr21.dat
+echo "36.714000 0.65 uc"  >> chr21.dat
+echo "36.686001 0.625 um" >> chr21.dat
+echo "36.717000 0.625 um" >> chr21.dat
+echo "36.699115 0.6 s" >> chr21.dat
+echo "36.749917 0.6 s" >> chr21.dat
 plotLine -x "Position (Mb)" -y "Uniqueness" chr21.dat

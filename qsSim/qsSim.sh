@@ -10,3 +10,6 @@ head -n 1 markers.fasta
 head -n 1 markers.fasta |
     awk -f cut.awk
 sblast markers.fasta targets/t2.fasta
+sblast markers.fasta targets/t2.fasta |
+    awk -f ../scripts/acc.awk \
+          -v ts=4501 -v te=5500 -v tl=10000

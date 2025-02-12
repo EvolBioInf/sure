@@ -1,12 +1,20 @@
-# [`sure`](https://owncloud.gwdg.de/index.php/s/598wWizO5dto4nX): Search for Unique Regions
+# [`sure`](https://owncloud.gwdg.de/index.php/s/598wWizO5dto4nX):
+Search for Unique Regions, A Tutorial
 ## Authors
 Beatriz Vieira Mourato and Bernhard Haubold
 
 ## Description
-This package accompanies our forthcoming review of fast methods for
-finding unique regions in genome sequences.
+This [tutorial](https://owncloud.gwdg.de/index.php/s/598wWizO5dto4nX)
+accompanies our forthcoming review of fast methods for finding unique
+regions in genome sequences.
 
-## [Documentation](https://owncloud.gwdg.de/index.php/s/598wWizO5dto4nX)
+## [Tutorial](https://owncloud.gwdg.de/index.php/s/598wWizO5dto4nX)
+
+## Dependencies
+To install the dependencies, run 
+```
+bash scripts/setup.sh
+```
 
 ## Generate Scripts
 Simply execute
