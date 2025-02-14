@@ -1,5 +1,5 @@
 # [`sure`](https://owncloud.gwdg.de/index.php/s/598wWizO5dto4nX):
-Search for Unique Regions, A Tutorial
+Searching for Unique Regions, A Tutorial
 ## Authors
 Beatriz Vieira Mourato and Bernhard Haubold
 

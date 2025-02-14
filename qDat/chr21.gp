@@ -1,4 +1,4 @@
-set terminal postscript eps color size 15cm,7cm
+set terminal postscript eps color size 12cm,7cm
 set output "chr21.ps"
 set xlabel "Position (Mb)"
 set ylabel "Uniqueness"

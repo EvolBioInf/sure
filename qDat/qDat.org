@@ -589,11 +589,13 @@ mappability region, 36,691,001--36,709,000.
       head
 #+end_src
 #+begin_export latex
+\footnotesize
 \begin{verbatim}
 NC_000021.9 36688001 36714000  1.015 NC_000021.9 36691001 36709000 1 17999
 NC_000021.9 33018001 33036000  1.014 NC_000021.9 33018001 33035000 1 16999
 ...
 \end{verbatim}
+\normalsize
 To annotate this unique region, we extract the genes that intersect it
 from the annotation file. This gives two long non-coding RNAs at
 36,632,681--36,698,991 on the reverse strand (accession LOC105369308)
@@ -609,11 +611,13 @@ Down syndrome~\cite{dah95:dow, but22:cha}.
       awk '$4<=36714000 && $5>=36686001'
 #+end_src
 #+begin_export latex
+\scriptsize
 \begin{verbatim}
 NC_000021.9 BestRefSeq          gene 36632681 36698991 . - . ID=gene-LOC105369308...
 NC_000021.9 BestRefSeq%2CGnomon gene 36699115 36749917 . + . ID=gene-SIM2...
 NC_000021.9 Gnomon              gene 36700516 36709131 . + . ID=gene-LOC107985492...
 \end{verbatim}
+\normalsize
 So let's plot $\cm$ and the mappability in the 200\,kb surrounding our
 unique region, 36,588,001--36,814,000. We first extract the $\cm$
 values and label them ``c'', then the mappbability labeled ``m''.
